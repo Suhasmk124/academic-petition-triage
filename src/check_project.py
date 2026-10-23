@@ -35,7 +35,7 @@ def main():
             (ROOT / 'evaluations/assessment_sample.json').write_text(json.dumps(
                 {k: v for k, v in result.items() if k != 'evidence'}, indent=2, ensure_ascii=False), encoding='utf-8')
     report = dict(unit_tests=unit.testsRun, unit_passed=True, retrieval_checks=11,
-                  live_workflows=results, independent_llm_agents=False,
+                  live_workflows=results, hosted_orchestration_implemented=True, live_hosted_validation=False,
                   semantic_entailment_verified=False,
                   scope='Focused regressions; not the required full 20+ scenario quality evaluation.')
     (ROOT / 'evaluations/project_checks.json').write_text(json.dumps(report, indent=2), encoding='utf-8')

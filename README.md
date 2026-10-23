@@ -18,7 +18,7 @@ Retrieve academic regulations and support human review of synthetic student peti
 - A LangGraph investigation/verification handoff with typed extractive findings, exact citations, supporting-record checklists and human-review reasons. Each finding is bound to canonical source text and citation metadata. One re-search is allowed; repeated failures discard findings and escalate.
 - Seven focused retrieval cases and four quotation/integrity checks in src/test_retrieval.py.
 
-These are Python workflow nodes, not two independent LLM agents. No chat LLM is configured. The current graph calls only search_regulations; having three tools defined does not satisfy the requirement for agent-selected tool use.
+The default workflow.py remains deterministic. The separate agent_workflow.py now implements two separately prompted LLM-backed roles with model-selected search/fetch/quote-check tools, bounded handoff and deterministic fallback. Hosted configuration and live validation are pending; automated agent tests use scripted model responses. See docs/hosted_agents.md. Do not claim live A1/A2/A3 completion from stub tests.
 
 ## PowerShell commands
 
@@ -48,6 +48,6 @@ This chat now works directly in C:\Sauce\academic-petition-triage. The active wo
 
 ## Remaining instructor requirements
 
-Semantic claim entailment and evidence-based eligibility recommendations beyond referral; two independent LLM-backed agents with agent-selected tools; request contracts and quarantine; asynchronous FastAPI and queue; prompt versions and A/B evaluation; 20+ fixed evaluation scenarios and groundedness/faithfulness metrics; injection and output defenses; timeout/retry/backoff/circuit breaker; token/cost attribution; feedback; tracing, metrics and dashboards; Docker Compose and worker scaling; stub model service and Locust/SLO measurements; caching/rate limiting; runbooks, incident log and web client.
+Live validation and evaluation of the hosted roles and their semantic entailment judgments; evidence-based recommendations beyond referral; request contracts and quarantine; asynchronous FastAPI and queue; prompt versions and A/B evaluation; 20+ fixed evaluation scenarios and groundedness/faithfulness metrics; injection and output defenses; timeout/retry/backoff/circuit breaker; token/cost attribution; feedback; tracing, metrics and dashboards; Docker Compose and worker scaling; stub model service and Locust/SLO measurements; caching/rate limiting; runbooks, incident log and web client.
 
 Configuration still contains the prototype's embedding-model name; the environment-based configuration requirement is not complete. Use synthetic petitions only. Do not commit student records, credentials, virtual environments or generated databases.

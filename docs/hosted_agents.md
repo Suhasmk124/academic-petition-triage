@@ -1,0 +1,44 @@
+# Hosted-agent stage — free-tier development
+
+## What is implemented
+
+`src/agent_workflow.py` defines two separately prompted LLM-backed roles in LangGraph. The Investigation role selects tools and drafts cited claims. The Verification role receives a fresh conversation with the typed draft, petition and canonical evidence, checks quote presence using a tool, and judges each claim's entailment. Both roles may use the same configured model; their prompts, histories, tasks and metrics are distinct.
+
+Three tools are exposed to both roles: search_regulations, fetch_exact_clause, and verify_claim_quotes (a bounded batch wrapper over the existing source-quote check). Retrieval must be selected by the investigation model; there is no hidden automatic pre-search in hosted mode. Verifier quote checks cannot be substituted by checks made in the investigator role. Tool arguments and model outputs are validated. Generated citation locations are never accepted; final citations come from server-held evidence records.
+
+Each role allows at most six model turns and six tool calls. There are at most two investigation/verification passes. Each HTTP call has a timeout and at most two transport/5xx attempts, with backoff. A 429 is not retried or routed to a paid model. Three failed completion calls open a circuit for 30 seconds within that model-client instance. The circuit is not yet shared across workers or service requests.
+
+Failures fall back to the existing deterministic source-backed workflow. A semantically unsupported draft can trigger one re-search; repeated semantic failure escalates and discards the claims. Outputs always require human review, and only the referral recommendation is enabled. An LLM verdict is a fallible semantic judgment, not proof or an academic decision.
+
+Versioned prompts live in prompts/. This is one prompt variant per role; prompt A/B comparison remains planned. Metrics record per-role model/tool counts, tool names, success and elapsed time; HTTP events include retries and token usage when supplied. Unknown token/cost values remain null. No billing cost is inferred from model list prices, and free-account status is not queried programmatically.
+
+## Free hosted configuration
+
+Provider research on 2026-10-23 selected Groq's Free Plan for the initial adapter. Its hosted tool support and free quota are documented at:
+
+- https://console.groq.com/docs/tool-use/overview
+- https://console.groq.com/docs/rate-limits
+- https://console.groq.com/docs/billing-faqs
+- https://console.groq.com/docs/openai
+
+Alternative free offerings are documented at https://ai.google.dev/gemini-api/docs/pricing and https://openrouter.ai/pricing. We have not implemented or tested provider-specific adapters for those alternatives. A consumer chat subscription is not assumed to include API credits.
+
+The tracked .env.example intentionally contains no endpoint, model identifier or credential. An ignored local .env has been prepared with the selected endpoint/model only if no .env already existed. Do not add a payment method or upgrade the account for this project. Stay on the provider's Free Plan. Account tier is under your control: LLM_FREE_PLAN_CONFIRMED is an explicit user assertion, not a billing safeguard that detects a later account upgrade.
+
+Open .env locally, add your API key and change LLM_FREE_PLAN_CONFIRMED to true only after checking the account is on the Free Plan. Never paste a key into chat or Git. The adapter makes no calls unless configuration and confirmation are present. Existing workflow.py remains the default deterministic CLI; hosted mode requires its own explicit command:
+
+```powershell
+& '.\.venv\Scripts\python.exe' '.\src\agent_workflow.py'
+```
+
+If quota/configuration fails, the result reports DETERMINISTIC_FALLBACK. It does not silently change provider, model or account plan. Free quotas are limited and a multi-turn two-role run consumes multiple requests and repeated input context. Keep live smoke tests small; throughput/worker scaling tests will use a stub model service, as required by the course.
+
+## Validation and remaining work
+
+The automated suite uses scripted role responses and an in-memory HTTP mock transport. No hosted request or charge is made by these tests. It covers the handoff, model-selected tools, unknown tools, fabricated evidence, verifier coverage, bounded loops, semantic retry/escalation, free-quota failure, HTTP retries and circuit state. Existing source-backed regressions remain in the combined check.
+
+```powershell
+& '.\.venv\Scripts\python.exe' '.\src\check_project.py'
+```
+
+Live provider compatibility, real-model citation/entailment quality, free-account availability and latency remain unvalidated until a key is configured and a small live smoke run passes. Full A1/A2/A3 acceptance cannot be claimed from a stub run. Input/handbook untrusted-data instructions and tool allowlists exist, but the required injection evaluation, toxicity filters and output-defense suite are not complete. A4 API/queue and the remaining course requirements are still open.
