@@ -2,68 +2,52 @@
 
 Mini Project 15 for ML System Design & AgentOps (UE24AM342AA5).
 
-A prototype for retrieving academic regulations and supporting human review of synthetic student petitions. The system must never make final academic decisions.
+Retrieve academic regulations and support human review of synthetic student petitions. The system must never make final academic decisions.
 
-## Current implementation
+## Implemented
 
 - PDF extraction of 180 handbook pages with PyMuPDF.
-- Chroma indexing with local all-MiniLM-L6-v2 embeddings (496 chunks in the existing local index).
-- A LangChain retrieval tool and retrieval smoke-test script.
-- A LangGraph investigation node and verification node with a maximum of two searches.
-- Keyword checks for the attendance example and review/escalation states.
+- Local all-MiniLM-L6-v2 embeddings and Chroma persistence.
+- A v2 index of 509 records: 496 general chunks and 13 reviewed clause records.
+- Complete clauses for sections 5.6, 5.7(C), and 8.1, plus selected related provisions from 5.7(B) and 8.2. Unreviewed chunks have unknown chapter/section metadata; printed page numbers are verified only for PDF pages 25, 26 and 37.
+- Exact source offsets, page hashes, source title/version, verified page labels and generated-locator labels. The source's 5.5(C)/5.7(C) reference inconsistency is preserved and flagged.
+- Stable record IDs and incremental upserts. An unchanged repeat run re-embeds zero records. The legacy collection is preserved.
+- Hybrid lexical/vector retrieval with reviewed clause preference, linked section evidence and full clause quotations. A single retrieval makes one embedding request and one vector query and returns at most four passage groups.
+- Three callable LangChain tools: search_regulations, fetch_exact_clause, verify_source_quote.
+- Quote-presence and source-integrity checks. These do NOT check claim entailment.
+- A LangGraph investigation node and verification node, with at most two searches and review/escalation states. Existing workflow output remains a placeholder assessment with attendance-specific keyword checks.
+- Seven focused retrieval cases and four quotation/integrity checks in src/test_retrieval.py.
 
-These are two Python workflow nodes, not two independent LLM agents. No chat LLM is configured. The assessment text is a fixed placeholder, and verification does not yet validate individual claims or citations.
+These are Python workflow nodes, not two independent LLM agents. No chat LLM is configured. The current graph calls only search_regulations; having three tools defined does not satisfy the requirement for agent-selected tool use.
 
-## Repository snapshot
+## PowerShell commands
 
-The source files under `src/` are the current working project files as of 2026-10-23. The existing virtual environment and generated Chroma database are excluded; regenerate the database locally when needed.
-
-`docs/proposals/index_corpus.py` is the proposed complete replacement indexer. It has been preview-tested against the corpus and tested with stub embeddings in a temporary database. It has NOT been installed as the active indexer, and semantic retrieval quality has not yet been tested. It adds 13 reviewed clause records, source offsets, verified page labels and incremental updates in a separate v2 collection.
-
-`docs/academic_petition_triage_context_handoff.md` preserves the project context, requirements and previous successful run details. Its status is historical; use the active source and this README to distinguish installed code from proposals.
-
-## Local PowerShell usage
-
-The existing project uses Python 3.11. From the repository root, using an existing environment with the listed dependencies:
+Use the existing Python 3.11 virtual environment. No package reinstall is required for the current project.
 
 ```powershell
 .\.venv\Scripts\Activate.ps1
-python extract_pdf.py
-python src\index_corpus.py
+python src\index_corpus.py --preview
+python src\index_corpus.py --apply
 python src\test_retrieval.py
 python src\workflow.py
 ```
 
-The active `src/index_corpus.py` deletes and rebuilds its legacy Chroma collection. Do not run it merely to inspect the project. Chroma retrieval requires an index to exist. Initial embedding-model download requires network access. Dependencies are pinned to the versions observed in the existing working environment; a fresh-install reproducibility test is still pending.
+The default indexer mode is preview. --apply updates iisc_academic_regulations_v2 without deleting the legacy collection. The generated database is ignored by Git and must be built locally after pulling this change. The cached embedding model was used for validation; a clean-machine dependency/model installation has not been tested.
 
-To preview the proposed indexer without changing the database:
+Retrieval checks write evaluations/retrieval_smoke_report.json. This small regression suite is not the required 20+ scenario evaluation. The no-overlap gate only rejects queries with no matching lexical terms; reliable out-of-corpus detection is still planned. A matching quote does not prove that a generated claim follows from it, or that a petition is eligible.
 
-```powershell
-python docs\proposals\index_corpus.py --root . --preview
-```
+## Source and history
 
-## Corpus and citation review
+Corpus: IISc Undergraduate Handbook 2025-26 in data/raw/. This is third-party source material; the repository does not grant rights over it. Extracted text is in data/processed/.
 
-Corpus: IISc Undergraduate Handbook 2025-26, stored under `data/raw/`. The handbook is third-party source material; no ownership or license grant over it is implied by this repository.
+- docs/academic_petition_triage_context_handoff.md: historical context and instructor requirements.
+- docs/proposals/index_corpus.py: the original proposed indexer, retained as historical material. The active maintained implementation is now src/index_corpus.py.
+- docs/clause_retrieval_update.md: change scope, validation and limitations.
 
-Reviewed PDF pages: 25 (printed 22), 26 (printed 23), and 37 (printed 34).
+The original C:\Sauce project folder is not modified by the assistant's writable working-copy tests. Pull the committed source changes and run --apply there to create its local v2 index.
 
-- Sections 5.6(i) and 8.1(iii): application within seven days of recovery, with the specified supporting documents and SLCM/SAP requirements.
-- Section 5.7(C): X-grade evidence, instructor responsibilities and retest deadlines.
-- Section 8.2(v) remains separate from attendance condonation under 8.1.
-- Section 5.6 prints a cross-reference to 5.5(C), while the X-grade heading is 5.7(C). Preserve and flag the source inconsistency.
+## Remaining instructor requirements
 
-Printed-page estimates and chapter labels in the active legacy indexer are not reliable enough for final citations.
+Structured claim-level assessments and entailment verification; two independent LLM-backed agents with agent-selected tools; request contracts and quarantine; asynchronous FastAPI and queue; prompt versions and A/B evaluation; 20+ fixed evaluation scenarios and groundedness/faithfulness metrics; injection and output defenses; timeout/retry/backoff/circuit breaker; token/cost attribution; feedback; tracing, metrics and dashboards; Docker Compose and worker scaling; stub model service and Locust/SLO measurements; caching/rate limiting; runbooks, incident log and web client.
 
-## Planned work
-
-- Connect clause-level retrieval and evaluate expected passages.
-- Structured evidence assessments and claim-level citation verification.
-- Two distinct LLM-backed agents, agent-selected tools and bounded handoffs.
-- Request validation/quarantine, asynchronous FastAPI, queue and polling.
-- Fixed evaluations, prompt versions, injection defenses and output filters.
-- Retries/backoff, timeouts, circuit breaker, metrics, tracing and cost tracking.
-- Docker Compose, stub model service, load tests, worker scaling and SLO reporting.
-- Feedback, caching/rate limits, runbooks, incident log and web client.
-
-These requirements are not implemented in this snapshot. Use synthetic petitions only; do not commit real student records or secrets.
+Configuration still contains the prototype's embedding-model name; the environment-based configuration requirement is not complete. Use synthetic petitions only. Do not commit student records, credentials, virtual environments or generated databases.

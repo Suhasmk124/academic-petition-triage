@@ -1,0 +1,144 @@
+{
+  "scope": "7 focused retrieval cases plus 4 integrity checks; not the required 20+ scenario evaluation",
+  "results": [
+    {
+      "case": "attendance",
+      "section": "8.1",
+      "pdf_page": 37,
+      "passed": true,
+      "matched_sections": [
+        "8.1",
+        "8.1",
+        "8.1",
+        "8.2",
+        "8.2",
+        "5.7(B)",
+        "5.6",
+        "5.6"
+      ]
+    },
+    {
+      "case": "attendance_medical",
+      "section": "8.1",
+      "pdf_page": 37,
+      "passed": true,
+      "matched_sections": [
+        "8.1",
+        "8.1",
+        "8.1",
+        "5.7(B)",
+        "5.6",
+        "5.6",
+        "8.2",
+        "8.2"
+      ]
+    },
+    {
+      "case": "medical_deadline",
+      "section": "8.1",
+      "pdf_page": 37,
+      "passed": true,
+      "matched_sections": [
+        "8.1",
+        "8.1",
+        "8.1",
+        "5.7(C)",
+        "5.7(C)",
+        "5.7(C)",
+        "5.7(C)",
+        "5.7(C)",
+        "5.6",
+        "5.6",
+        "8.2",
+        "8.2"
+      ]
+    },
+    {
+      "case": "terminal_medical",
+      "section": "5.6",
+      "pdf_page": 25,
+      "passed": true,
+      "matched_sections": [
+        "5.6",
+        "5.6",
+        "8.1",
+        "8.1",
+        "8.1",
+        "5.7(C)",
+        "5.7(C)",
+        "5.7(C)",
+        "5.7(C)",
+        "5.7(C)",
+        "8.2",
+        "8.2"
+      ]
+    },
+    {
+      "case": "x_grade",
+      "section": "5.7(C)",
+      "pdf_page": 26,
+      "passed": true,
+      "matched_sections": [
+        "5.7(C)",
+        "5.7(C)",
+        "5.7(C)",
+        "5.7(C)",
+        "5.7(C)",
+        "5.7(B)",
+        null,
+        null
+      ]
+    },
+    {
+      "case": "personal_leave",
+      "section": "8.2",
+      "pdf_page": 37,
+      "passed": true,
+      "matched_sections": [
+        "8.2",
+        "8.2",
+        "8.1",
+        "8.1",
+        "8.1",
+        "5.6",
+        "5.6",
+        "5.7(B)"
+      ]
+    },
+    {
+      "case": "makeup_exclusion",
+      "section": "5.7(B)",
+      "pdf_page": 26,
+      "passed": true,
+      "matched_sections": [
+        "5.7(B)",
+        "5.7(C)",
+        "5.7(C)",
+        "5.7(C)",
+        "5.7(C)",
+        "5.7(C)",
+        "8.1",
+        "8.1",
+        "8.1",
+        "5.6",
+        "5.6"
+      ]
+    },
+    {
+      "case": "exact_quote_checks",
+      "passed": true
+    },
+    {
+      "case": "unknown_evidence_rejected",
+      "passed": true
+    },
+    {
+      "case": "no_overlap_abstains",
+      "passed": true
+    },
+    {
+      "case": "stale_source_rejected",
+      "passed": true
+    }
+  ]
+}

@@ -182,6 +182,8 @@ app = builder.compile()
 # --------------------------------------------------
 
 if __name__ == "__main__":
+    import sys
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 
     petition = (
         "My attendance is 72%. I missed classes because of a medical issue. "
@@ -223,3 +225,4 @@ if __name__ == "__main__":
     print(result["evidence"])
 
     print("\n" + "=" * 60)
+
