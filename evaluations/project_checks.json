@@ -1,6 +1,6 @@
 {
   "service_http_smoke_passed": true,
-  "unit_tests": 54,
+  "unit_tests": 60,
   "unit_passed": true,
   "retrieval_checks": 11,
   "live_workflows": [
@@ -32,5 +32,7 @@
   "hosted_orchestration_implemented": true,
   "live_hosted_validation": false,
   "semantic_entailment_verified": false,
-  "scope": "Focused regressions; not the required full 20+ scenario quality evaluation."
+  "fixed_scenarios": 24,
+  "fixed_workflow_runs": 48,
+  "scope": "Local regression and extractive evaluation only; hosted semantic quality and prompt A/B remain unvalidated."
 }

@@ -24,6 +24,8 @@ The default workflow.py remains deterministic. The separate agent_workflow.py no
 
 The local service now supports asynchronous submission, run-ID polling, persistent queue/results, invalid-request quarantine and a separate worker. It defaults to a simulated model with real local source checks and makes no hosted API calls. Hosted mode is not enabled through the service. See docs/api_queue_stage.md for commands, payloads and limitations. SQLite is the local queue prototype; Docker and a distributed broker are not implemented yet.
 
+The petition portal at http://127.0.0.1:8000/ now provides a responsive submission form, processing progress, full clause quotations, source details and supporting-record checklists. `/docs` remains the technical API reference. The portal has no external asset dependencies. See docs/portal_and_evaluation.md for startup commands and scope.
+
 ## PowerShell commands
 
 Use the existing Python 3.11 virtual environment. No package reinstall is required for the current project.
@@ -38,7 +40,7 @@ python src\workflow.py
 
 The default indexer mode is preview. --apply updates iisc_academic_regulations_v2 without deleting the legacy collection. The generated database is ignored by Git and must be built locally after pulling this change. The cached embedding model was used for validation; a clean-machine dependency/model installation has not been tested.
 
-Retrieval checks write evaluations/retrieval_smoke_report.json. This small regression suite is not the required 20+ scenario evaluation. The no-overlap gate only rejects queries with no matching lexical terms; reliable out-of-corpus detection is still planned. A matching quote does not prove that a generated claim follows from it, or that a petition is eligible.
+Retrieval smoke checks write evaluations/retrieval_smoke_report.json. A separate fixed set now covers 24 synthetic scenarios and 48 deterministic/simulated workflow runs, plus historical/current retrieval comparison. Run `python src/check_project.py --service --evaluation`; see evaluations/fixed_suite_report.json. Complete-clause recall rose from 49.17% to 100% on the 20 supported queries, with different context budgets explicitly reported. Exact-source faithfulness and page relevance proxies do not establish semantic correctness. Hosted semantic evaluation and prompt A/B remain planned. The no-overlap gate only rejects queries with no matching lexical terms; reliable out-of-corpus detection is still planned.
 
 ## Source and history
 
@@ -52,6 +54,6 @@ This chat now works directly in C:\Sauce\academic-petition-triage. The active wo
 
 ## Remaining instructor requirements
 
-Live validation and evaluation of the hosted roles and their semantic entailment judgments; evidence-based recommendations beyond referral; Service authentication and distributed queue hardening; prompt versions and A/B evaluation; 20+ fixed evaluation scenarios and groundedness/faithfulness metrics; injection and output defenses; timeout/retry/backoff/circuit breaker; token/cost attribution; feedback; tracing, metrics and dashboards; Docker Compose and worker scaling; stub model service and Locust/SLO measurements; caching/rate limiting; runbooks, incident log and web client.
+Live validation and evaluation of the hosted roles and their semantic entailment judgments; evidence-based recommendations beyond referral; service authentication and distributed queue hardening; prompt A/B evaluation and broader semantic quality metrics; injection and output defenses; end-to-end reliability hardening; token/cost attribution; feedback; tracing, metrics and dashboards; Docker Compose and worker scaling; separate stub model service and Locust/SLO measurements; caching/rate limiting; runbooks and incident log.
 
 Configuration still contains the prototype's embedding-model name; the environment-based configuration requirement is not complete. Use synthetic petitions only. Do not commit student records, credentials, virtual environments or generated databases.

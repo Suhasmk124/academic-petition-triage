@@ -1,7 +1,7 @@
 """A simulated model that exercises real tools and contracts, never a hosted API."""
 import json
 import time
-from assessment import PROVISIONS, classify
+from assessment import MISSING_EVIDENCE, PROVISIONS, classify
 
 class StubChat:
     events = []
@@ -22,7 +22,7 @@ class StubChat:
                 return self.call('fetch_exact_clause', {'clause_id': missing[0]}, len(messages))
             draft = {'claims': [{'claim_id': f'c{i}', 'statement': citations[locator]['exact_quote'],
                                  'evidence_id': citations[locator]['evidence_id']} for i, locator in enumerate(expected, 1)],
-                     'missing_evidence': ['Synthetic demo only; supporting records require human review.'],
+                     'missing_evidence': MISSING_EVIDENCE[classify(payload['petition'])],
                      'routing_recommendation': 'REFER_TO_COMMITTEE',
                      'reasons': ['Simulated extractive workflow; no real LLM semantic judgment.']}
             return {'role': 'assistant', 'content': json.dumps(draft)}

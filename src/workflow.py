@@ -1,4 +1,4 @@
-"""Deterministic LangGraph evidence handoff. Independent LLM agents remain planned."""
+"""Deterministic LangGraph evidence handoff; LLM roles live in agent_workflow.py."""
 import argparse
 import json
 import sys
@@ -70,7 +70,7 @@ builder.add_conditional_edges('verify', route_after_verification, {'investigate'
 app = builder.compile()
 
 def run_petition(petition):
-    # Invalid input never reaches the graph through this entry point. Quarantine/API is planned.
+    # Invalid input never reaches the graph through this entry point; API validation runs before queueing.
     request = PetitionRequest(petition=petition)
     return app.invoke({'petition': request.petition, 'searches': 0, 'status': 'STARTED'},
                       config={'recursion_limit': 10})

@@ -72,6 +72,15 @@ class StoreTests(unittest.TestCase):
             self.store.submit('Two.', 'stub', str(uuid4()), capacity=1)
 
 class APITests(unittest.TestCase):
+    def test_portal_and_assets_are_served_with_existing_api(self):
+        page = self.client.get('/')
+        self.assertEqual(page.status_code, 200)
+        self.assertIn('Petition desk', page.text)
+        self.assertIn('no-cache', page.headers['cache-control'])
+        self.assertEqual(self.client.get('/assets/app.js').status_code, 200)
+        self.assertEqual(self.client.get('/assets/style.css').status_code, 200)
+        self.assertEqual(self.client.get('/docs').status_code, 200)
+
     def setUp(self):
         self.directory = tempfile.TemporaryDirectory()
         self.settings = ServiceSettings(db_path=Path(self.directory.name) / 'service.sqlite3', stub_delay_seconds=0)

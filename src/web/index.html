@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#173e36">
+  <title>Petition desk · Academic review</title>
+  <link rel="stylesheet" href="/assets/style.css">
+  <script defer src="/assets/app.js"></script>
+</head>
+<body>
+<aside class="sidebar">
+  <a class="brand" href="/" aria-label="Petition desk home"><span class="brand-mark">P<span>·</span></span><span>Petition desk<small>ACADEMIC REVIEW</small></span></a>
+  <div class="workspace-label">WORKSPACE</div>
+  <a class="nav active" href="#new-petition"><span aria-hidden="true">▤</span> New petition <span class="nav-dot"></span></a>
+  <a class="nav" href="#review"><span aria-hidden="true">◎</span> Review workspace</a>
+  <div class="sidebar-note"><span class="eyebrow">BUILT FOR HUMAN REVIEW</span><p>Find the rule.<br>Keep the context.<br>Leave the decision to people.</p><div class="book-icon" aria-hidden="true">§</div></div>
+  <a class="api-link" href="/docs" target="_blank" rel="noopener">API reference <span aria-hidden="true">↗</span></a>
+</aside>
+<main>
+  <header class="topbar"><span>Academic regulations <span class="slash">/</span> Petition workspace</span><span id="connection" class="connection" role="status">Connecting…</span></header>
+  <div class="page">
+    <div class="intro"><div><span class="eyebrow">REGULATION TO RECOMMENDATION</span><h1>A clearer path to review.</h1><p>Bring a petition. Find the relevant handbook provisions.<br class="desktop-break"> Prepare an evidence-led handoff for the academic officer.</p></div><span id="mode" class="mode">LOCAL WORKSPACE</span></div>
+    <div class="notice"><span class="notice-icon" aria-hidden="true">i</span><p><strong>A review aid, with people in charge.</strong> Use fictional examples only. This service retrieves rules and checks source quotations; it does not approve or reject petitions.</p></div>
+    <div class="workspace">
+      <section class="panel composer" id="new-petition" aria-labelledby="compose-title">
+        <div class="panel-heading"><span class="step">01</span><div><h2 id="compose-title">Start with the petition</h2><p>Tell us what happened and what needs review.</p></div></div>
+        <form id="petition-form">
+          <label for="petition">Petition details</label><div class="field-hint" id="petition-hint">Include the course context, dates and reason for the request. Omit personal information.</div>
+          <textarea id="petition" name="petition" maxlength="4000" required aria-describedby="petition-hint count" placeholder="For example: My attendance is 72% following a medical absence. What provisions and supporting records should the officer review?"></textarea>
+          <div class="text-meta"><span>Fictional scenarios only</span><span id="count">0 / 4,000</span></div>
+          <fieldset><legend>Or explore a sample</legend><div class="samples"><button type="button" data-sample="attendance">Attendance shortage <span>↗</span></button><button type="button" data-sample="medical">Missed examination <span>↗</span></button><button type="button" data-sample="grade">X grade &amp; retest <span>↗</span></button></div></fieldset>
+          <label class="consent"><input id="synthetic" type="checkbox" required><span>This is a synthetic petition and contains no real student records.</span></label>
+          <button id="submit" class="primary" type="submit">Find applicable provisions <span aria-hidden="true">→</span></button>
+          <p class="form-foot">IISc Undergraduate Handbook · 2025–26</p>
+          <div id="form-error" class="error" role="alert" hidden></div>
+        </form>
+      </section>
+      <section class="panel review" id="review" aria-labelledby="review-title">
+        <div class="panel-heading"><span class="step">02</span><div><h2 id="review-title">Your review brief</h2><p>Source-backed context, ready for a human handoff.</p></div></div>
+        <div id="empty" class="empty"><div class="document-art" aria-hidden="true"><span>§</span><i></i><i></i><i></i><b>✓</b></div><h3>Every good review starts<br>with the right provision.</h3><p>Submit a fictional petition to see cited rules,<br>source checks and the next steps for review.</p><div class="empty-tags"><span>Clause citations</span><span>Source quotations</span><span>Human oversight</span></div></div>
+        <div id="run" hidden><div id="progress" class="progress" aria-label="Processing progress"><span data-stage="QUEUED">1 <b>Queued</b></span><i></i><span data-stage="RUNNING">2 <b>Checking sources</b></span><i></i><span data-stage="SUCCEEDED">3 <b>Brief ready</b></span></div><p id="run-status" class="run-status" role="status" aria-live="polite"></p><div id="result"></div><div class="run-footer"><span id="run-id"></span><button id="resume" type="button" hidden>Check again</button></div></div>
+      </section>
+    </div>
+    <footer><span>Academic Petition Triage <span class="footer-dot">·</span> Course project</span><span>Reviewed source metadata: PDF pages 25, 26 &amp; 37</span></footer>
+  </div>
+</main>
+</body></html>

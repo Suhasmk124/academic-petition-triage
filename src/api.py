@@ -6,6 +6,9 @@ from contextlib import asynccontextmanager
 from uuid import UUID, uuid4
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import JSONResponse
+from fastapi.responses import FileResponse
+from fastapi.staticfiles import StaticFiles
+from pathlib import Path
 from pydantic import ValidationError
 from api_models import AcceptedRun, RunView, Submission
 from job_store import JobStore, QueueFull
@@ -21,7 +24,13 @@ def create_app(settings=None, store=None):
         await asyncio.to_thread(store.initialize)
         yield
 
-    app = FastAPI(title='Academic Petition Triage', version='0.3.0', lifespan=lifespan)
+    app = FastAPI(title='Academic Petition Triage', version='0.4.0', lifespan=lifespan)
+    web = Path(__file__).resolve().parent / 'web'
+    app.mount('/assets', StaticFiles(directory=web), name='assets')
+
+    @app.get('/', include_in_schema=False)
+    async def portal():
+        return FileResponse(web / 'index.html', headers={'Cache-Control': 'no-cache'})
     app.state.store = store
     app.state.settings = settings
 

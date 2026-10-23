@@ -8,7 +8,7 @@
     "RUNNING",
     "SUCCEEDED"
   ],
-  "submit_seconds": 0.61,
+  "submit_seconds": 0.797,
   "cited_findings": 3,
   "invalid_status": 422,
   "invalid_request_started_workflow": false,

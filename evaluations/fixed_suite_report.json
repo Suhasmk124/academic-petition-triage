@@ -1,0 +1,901 @@
+{
+  "dataset_version": 1,
+  "dataset_sha256": "205655d9c7cc780e7f6fb89ce1cf2ba94b2ca096682a34478661390b9bc579ff",
+  "scenarios": 24,
+  "supported_retrieval_cases": 20,
+  "workflow_runs": 48,
+  "all_workflows_passed": true,
+  "billable_model_requests": 0,
+  "retrieval_comparison": {
+    "baseline": {
+      "complete_clause_recall": 0.4917,
+      "page_relevance_proxy": 0.4384,
+      "returned_units": 5.55,
+      "returned_characters": 4904.35
+    },
+    "current": {
+      "complete_clause_recall": 1.0,
+      "page_relevance_proxy": 0.5848,
+      "returned_units": 10.15,
+      "returned_characters": 3847.8
+    }
+  },
+  "scope": "Fixed pilot scenarios; full-clause recall, page relevance proxy and exact extractive source faithfulness. No semantic quality or eligibility score.",
+  "comparison_policy": "Historical vector k=8, distance<=1.15 versus current hybrid<=4 section groups. Different context budgets; unit and character counts reported. This is a pipeline comparison, not an isolated ranker or prompt A/B experiment.",
+  "limitations": [
+    "Keyword classification remains narrow; these cases do not establish broad out-of-corpus detection.",
+    "The dataset was authored after the pilot implementation; it is a regression set, not a held-out benchmark.",
+    "Page overlap is only a relevance proxy; exact quotes do not prove semantic entailment.",
+    "Hosted semantic evaluation, prompt A/B, injection and toxicity evaluations remain planned."
+  ],
+  "results": [
+    {
+      "id": "attendance-threshold",
+      "retrieval": {
+        "baseline": {
+          "complete_clause_recall": 0.3333333333333333,
+          "expected_clauses": 3,
+          "covered_clauses": 1,
+          "page_relevance_proxy": 0.14285714285714285,
+          "returned_units": 7,
+          "returned_characters": 5787
+        },
+        "current": {
+          "complete_clause_recall": 1.0,
+          "expected_clauses": 3,
+          "covered_clauses": 3,
+          "page_relevance_proxy": 0.625,
+          "returned_units": 8,
+          "returned_characters": 2957
+        }
+      },
+      "workflows": {
+        "deterministic": {
+          "passed": true,
+          "status": "REVIEW_REQUIRED",
+          "findings": 3,
+          "source_grounded": 3,
+          "extractive_faithfulness": 1.0,
+          "unsupported_extractive_findings": 0
+        },
+        "stub": {
+          "passed": true,
+          "status": "REVIEW_REQUIRED",
+          "findings": 3,
+          "source_grounded": 3,
+          "extractive_faithfulness": 1.0,
+          "unsupported_extractive_findings": 0
+        }
+      }
+    },
+    {
+      "id": "attendance-midterm",
+      "retrieval": {
+        "baseline": {
+          "complete_clause_recall": 0.3333333333333333,
+          "expected_clauses": 3,
+          "covered_clauses": 1,
+          "page_relevance_proxy": 1.0,
+          "returned_units": 1,
+          "returned_characters": 920
+        },
+        "current": {
+          "complete_clause_recall": 1.0,
+          "expected_clauses": 3,
+          "covered_clauses": 3,
+          "page_relevance_proxy": 0.625,
+          "returned_units": 8,
+          "returned_characters": 2957
+        }
+      },
+      "workflows": {
+        "deterministic": {
+          "passed": true,
+          "status": "REVIEW_REQUIRED",
+          "findings": 3,
+          "source_grounded": 3,
+          "extractive_faithfulness": 1.0,
+          "unsupported_extractive_findings": 0
+        },
+        "stub": {
+          "passed": true,
+          "status": "REVIEW_REQUIRED",
+          "findings": 3,
+          "source_grounded": 3,
+          "extractive_faithfulness": 1.0,
+          "unsupported_extractive_findings": 0
+        }
+      }
+    },
+    {
+      "id": "attendance-terminal",
+      "retrieval": {
+        "baseline": {
+          "complete_clause_recall": 0.3333333333333333,
+          "expected_clauses": 3,
+          "covered_clauses": 1,
+          "page_relevance_proxy": 0.5,
+          "returned_units": 2,
+          "returned_characters": 1893
+        },
+        "current": {
+          "complete_clause_recall": 1.0,
+          "expected_clauses": 3,
+          "covered_clauses": 3,
+          "page_relevance_proxy": 0.625,
+          "returned_units": 8,
+          "returned_characters": 2957
+        }
+      },
+      "workflows": {
+        "deterministic": {
+          "passed": true,
+          "status": "REVIEW_REQUIRED",
+          "findings": 3,
+          "source_grounded": 3,
+          "extractive_faithfulness": 1.0,
+          "unsupported_extractive_findings": 0
+        },
+        "stub": {
+          "passed": true,
+          "status": "REVIEW_REQUIRED",
+          "findings": 3,
+          "source_grounded": 3,
+          "extractive_faithfulness": 1.0,
+          "unsupported_extractive_findings": 0
+        }
+      }
+    },
+    {
+      "id": "attendance-condonation",
+      "retrieval": {
+        "baseline": {
+          "complete_clause_recall": 0.3333333333333333,
+          "expected_clauses": 3,
+          "covered_clauses": 1,
+          "page_relevance_proxy": 1.0,
+          "returned_units": 1,
+          "returned_characters": 920
+        },
+        "current": {
+          "complete_clause_recall": 1.0,
+          "expected_clauses": 3,
+          "covered_clauses": 3,
+          "page_relevance_proxy": 0.625,
+          "returned_units": 8,
+          "returned_characters": 2957
+        }
+      },
+      "workflows": {
+        "deterministic": {
+          "passed": true,
+          "status": "REVIEW_REQUIRED",
+          "findings": 3,
+          "source_grounded": 3,
+          "extractive_faithfulness": 1.0,
+          "unsupported_extractive_findings": 0
+        },
+        "stub": {
+          "passed": true,
+          "status": "REVIEW_REQUIRED",
+          "findings": 3,
+          "source_grounded": 3,
+          "extractive_faithfulness": 1.0,
+          "unsupported_extractive_findings": 0
+        }
+      }
+    },
+    {
+      "id": "attendance-cmo",
+      "retrieval": {
+        "baseline": {
+          "complete_clause_recall": 0.3333333333333333,
+          "expected_clauses": 3,
+          "covered_clauses": 1,
+          "page_relevance_proxy": 0.125,
+          "returned_units": 8,
+          "returned_characters": 6679
+        },
+        "current": {
+          "complete_clause_recall": 1.0,
+          "expected_clauses": 3,
+          "covered_clauses": 3,
+          "page_relevance_proxy": 0.4166666666666667,
+          "returned_units": 12,
+          "returned_characters": 4290
+        }
+      },
+      "workflows": {
+        "deterministic": {
+          "passed": true,
+          "status": "REVIEW_REQUIRED",
+          "findings": 3,
+          "source_grounded": 3,
+          "extractive_faithfulness": 1.0,
+          "unsupported_extractive_findings": 0
+        },
+        "stub": {
+          "passed": true,
+          "status": "REVIEW_REQUIRED",
+          "findings": 3,
+          "source_grounded": 3,
+          "extractive_faithfulness": 1.0,
+          "unsupported_extractive_findings": 0
+        }
+      }
+    },
+    {
+      "id": "attendance-slcm",
+      "retrieval": {
+        "baseline": {
+          "complete_clause_recall": 0.6666666666666666,
+          "expected_clauses": 3,
+          "covered_clauses": 2,
+          "page_relevance_proxy": 0.25,
+          "returned_units": 8,
+          "returned_characters": 6798
+        },
+        "current": {
+          "complete_clause_recall": 1.0,
+          "expected_clauses": 3,
+          "covered_clauses": 3,
+          "page_relevance_proxy": 0.625,
+          "returned_units": 8,
+          "returned_characters": 2957
+        }
+      },
+      "workflows": {
+        "deterministic": {
+          "passed": true,
+          "status": "REVIEW_REQUIRED",
+          "findings": 3,
+          "source_grounded": 3,
+          "extractive_faithfulness": 1.0,
+          "unsupported_extractive_findings": 0
+        },
+        "stub": {
+          "passed": true,
+          "status": "REVIEW_REQUIRED",
+          "findings": 3,
+          "source_grounded": 3,
+          "extractive_faithfulness": 1.0,
+          "unsupported_extractive_findings": 0
+        }
+      }
+    },
+    {
+      "id": "attendance-sap",
+      "retrieval": {
+        "baseline": {
+          "complete_clause_recall": 0.6666666666666666,
+          "expected_clauses": 3,
+          "covered_clauses": 2,
+          "page_relevance_proxy": 0.25,
+          "returned_units": 8,
+          "returned_characters": 7091
+        },
+        "current": {
+          "complete_clause_recall": 1.0,
+          "expected_clauses": 3,
+          "covered_clauses": 3,
+          "page_relevance_proxy": 0.4166666666666667,
+          "returned_units": 12,
+          "returned_characters": 4290
+        }
+      },
+      "workflows": {
+        "deterministic": {
+          "passed": true,
+          "status": "REVIEW_REQUIRED",
+          "findings": 3,
+          "source_grounded": 3,
+          "extractive_faithfulness": 1.0,
+          "unsupported_extractive_findings": 0
+        },
+        "stub": {
+          "passed": true,
+          "status": "REVIEW_REQUIRED",
+          "findings": 3,
+          "source_grounded": 3,
+          "extractive_faithfulness": 1.0,
+          "unsupported_extractive_findings": 0
+        }
+      }
+    },
+    {
+      "id": "missed-classes",
+      "retrieval": {
+        "baseline": {
+          "complete_clause_recall": 0.3333333333333333,
+          "expected_clauses": 3,
+          "covered_clauses": 1,
+          "page_relevance_proxy": 0.3333333333333333,
+          "returned_units": 3,
+          "returned_characters": 2882
+        },
+        "current": {
+          "complete_clause_recall": 1.0,
+          "expected_clauses": 3,
+          "covered_clauses": 3,
+          "page_relevance_proxy": 0.2727272727272727,
+          "returned_units": 11,
+          "returned_characters": 4889
+        }
+      },
+      "workflows": {
+        "deterministic": {
+          "passed": true,
+          "status": "REVIEW_REQUIRED",
+          "findings": 3,
+          "source_grounded": 3,
+          "extractive_faithfulness": 1.0,
+          "unsupported_extractive_findings": 0
+        },
+        "stub": {
+          "passed": true,
+          "status": "REVIEW_REQUIRED",
+          "findings": 3,
+          "source_grounded": 3,
+          "extractive_faithfulness": 1.0,
+          "unsupported_extractive_findings": 0
+        }
+      }
+    },
+    {
+      "id": "exam-illness",
+      "retrieval": {
+        "baseline": {
+          "complete_clause_recall": 0.3333333333333333,
+          "expected_clauses": 6,
+          "covered_clauses": 2,
+          "page_relevance_proxy": 0.5,
+          "returned_units": 6,
+          "returned_characters": 5804
+        },
+        "current": {
+          "complete_clause_recall": 1.0,
+          "expected_clauses": 6,
+          "covered_clauses": 6,
+          "page_relevance_proxy": 0.5833333333333334,
+          "returned_units": 12,
+          "returned_characters": 4290
+        }
+      },
+      "workflows": {
+        "deterministic": {
+          "passed": true,
+          "status": "REVIEW_REQUIRED",
+          "findings": 6,
+          "source_grounded": 6,
+          "extractive_faithfulness": 1.0,
+          "unsupported_extractive_findings": 0
+        },
+        "stub": {
+          "passed": true,
+          "status": "REVIEW_REQUIRED",
+          "findings": 6,
+          "source_grounded": 6,
+          "extractive_faithfulness": 1.0,
+          "unsupported_extractive_findings": 0
+        }
+      }
+    },
+    {
+      "id": "exam-cmo",
+      "retrieval": {
+        "baseline": {
+          "complete_clause_recall": 0.5,
+          "expected_clauses": 6,
+          "covered_clauses": 3,
+          "page_relevance_proxy": 0.5714285714285714,
+          "returned_units": 7,
+          "returned_characters": 6776
+        },
+        "current": {
+          "complete_clause_recall": 1.0,
+          "expected_clauses": 6,
+          "covered_clauses": 6,
+          "page_relevance_proxy": 0.7272727272727273,
+          "returned_units": 11,
+          "returned_characters": 4059
+        }
+      },
+      "workflows": {
+        "deterministic": {
+          "passed": true,
+          "status": "REVIEW_REQUIRED",
+          "findings": 6,
+          "source_grounded": 6,
+          "extractive_faithfulness": 1.0,
+          "unsupported_extractive_findings": 0
+        },
+        "stub": {
+          "passed": true,
+          "status": "REVIEW_REQUIRED",
+          "findings": 6,
+          "source_grounded": 6,
+          "extractive_faithfulness": 1.0,
+          "unsupported_extractive_findings": 0
+        }
+      }
+    },
+    {
+      "id": "exam-recovery",
+      "retrieval": {
+        "baseline": {
+          "complete_clause_recall": 0.0,
+          "expected_clauses": 6,
+          "covered_clauses": 0,
+          "page_relevance_proxy": 0.5,
+          "returned_units": 4,
+          "returned_characters": 3835
+        },
+        "current": {
+          "complete_clause_recall": 1.0,
+          "expected_clauses": 6,
+          "covered_clauses": 6,
+          "page_relevance_proxy": 0.7272727272727273,
+          "returned_units": 11,
+          "returned_characters": 4059
+        }
+      },
+      "workflows": {
+        "deterministic": {
+          "passed": true,
+          "status": "REVIEW_REQUIRED",
+          "findings": 6,
+          "source_grounded": 6,
+          "extractive_faithfulness": 1.0,
+          "unsupported_extractive_findings": 0
+        },
+        "stub": {
+          "passed": true,
+          "status": "REVIEW_REQUIRED",
+          "findings": 6,
+          "source_grounded": 6,
+          "extractive_faithfulness": 1.0,
+          "unsupported_extractive_findings": 0
+        }
+      }
+    },
+    {
+      "id": "exam-portals",
+      "retrieval": {
+        "baseline": {
+          "complete_clause_recall": 0.3333333333333333,
+          "expected_clauses": 6,
+          "covered_clauses": 2,
+          "page_relevance_proxy": 0.25,
+          "returned_units": 8,
+          "returned_characters": 7165
+        },
+        "current": {
+          "complete_clause_recall": 1.0,
+          "expected_clauses": 6,
+          "covered_clauses": 6,
+          "page_relevance_proxy": 0.7272727272727273,
+          "returned_units": 11,
+          "returned_characters": 4059
+        }
+      },
+      "workflows": {
+        "deterministic": {
+          "passed": true,
+          "status": "REVIEW_REQUIRED",
+          "findings": 6,
+          "source_grounded": 6,
+          "extractive_faithfulness": 1.0,
+          "unsupported_extractive_findings": 0
+        },
+        "stub": {
+          "passed": true,
+          "status": "REVIEW_REQUIRED",
+          "findings": 6,
+          "source_grounded": 6,
+          "extractive_faithfulness": 1.0,
+          "unsupported_extractive_findings": 0
+        }
+      }
+    },
+    {
+      "id": "exam-substitute",
+      "retrieval": {
+        "baseline": {
+          "complete_clause_recall": 0.0,
+          "expected_clauses": 6,
+          "covered_clauses": 0,
+          "page_relevance_proxy": 0.5,
+          "returned_units": 2,
+          "returned_characters": 1893
+        },
+        "current": {
+          "complete_clause_recall": 1.0,
+          "expected_clauses": 6,
+          "covered_clauses": 6,
+          "page_relevance_proxy": 0.5833333333333334,
+          "returned_units": 12,
+          "returned_characters": 4290
+        }
+      },
+      "workflows": {
+        "deterministic": {
+          "passed": true,
+          "status": "REVIEW_REQUIRED",
+          "findings": 6,
+          "source_grounded": 6,
+          "extractive_faithfulness": 1.0,
+          "unsupported_extractive_findings": 0
+        },
+        "stub": {
+          "passed": true,
+          "status": "REVIEW_REQUIRED",
+          "findings": 6,
+          "source_grounded": 6,
+          "extractive_faithfulness": 1.0,
+          "unsupported_extractive_findings": 0
+        }
+      }
+    },
+    {
+      "id": "exam-instructor",
+      "retrieval": {
+        "baseline": {
+          "complete_clause_recall": 0.3333333333333333,
+          "expected_clauses": 6,
+          "covered_clauses": 2,
+          "page_relevance_proxy": 0.6666666666666666,
+          "returned_units": 3,
+          "returned_characters": 2880
+        },
+        "current": {
+          "complete_clause_recall": 1.0,
+          "expected_clauses": 6,
+          "covered_clauses": 6,
+          "page_relevance_proxy": 0.7272727272727273,
+          "returned_units": 11,
+          "returned_characters": 4059
+        }
+      },
+      "workflows": {
+        "deterministic": {
+          "passed": true,
+          "status": "REVIEW_REQUIRED",
+          "findings": 6,
+          "source_grounded": 6,
+          "extractive_faithfulness": 1.0,
+          "unsupported_extractive_findings": 0
+        },
+        "stub": {
+          "passed": true,
+          "status": "REVIEW_REQUIRED",
+          "findings": 6,
+          "source_grounded": 6,
+          "extractive_faithfulness": 1.0,
+          "unsupported_extractive_findings": 0
+        }
+      }
+    },
+    {
+      "id": "x-grade-deadline",
+      "retrieval": {
+        "baseline": {
+          "complete_clause_recall": 0.8,
+          "expected_clauses": 5,
+          "covered_clauses": 4,
+          "page_relevance_proxy": 0.375,
+          "returned_units": 8,
+          "returned_characters": 6537
+        },
+        "current": {
+          "complete_clause_recall": 1.0,
+          "expected_clauses": 5,
+          "covered_clauses": 5,
+          "page_relevance_proxy": 0.75,
+          "returned_units": 8,
+          "returned_characters": 2858
+        }
+      },
+      "workflows": {
+        "deterministic": {
+          "passed": true,
+          "status": "REVIEW_REQUIRED",
+          "findings": 5,
+          "source_grounded": 5,
+          "extractive_faithfulness": 1.0,
+          "unsupported_extractive_findings": 0
+        },
+        "stub": {
+          "passed": true,
+          "status": "REVIEW_REQUIRED",
+          "findings": 5,
+          "source_grounded": 5,
+          "extractive_faithfulness": 1.0,
+          "unsupported_extractive_findings": 0
+        }
+      }
+    },
+    {
+      "id": "x-grade-medical",
+      "retrieval": {
+        "baseline": {
+          "complete_clause_recall": 1.0,
+          "expected_clauses": 5,
+          "covered_clauses": 5,
+          "page_relevance_proxy": 0.375,
+          "returned_units": 8,
+          "returned_characters": 7210
+        },
+        "current": {
+          "complete_clause_recall": 1.0,
+          "expected_clauses": 5,
+          "covered_clauses": 5,
+          "page_relevance_proxy": 0.4166666666666667,
+          "returned_units": 12,
+          "returned_characters": 4290
+        }
+      },
+      "workflows": {
+        "deterministic": {
+          "passed": true,
+          "status": "REVIEW_REQUIRED",
+          "findings": 5,
+          "source_grounded": 5,
+          "extractive_faithfulness": 1.0,
+          "unsupported_extractive_findings": 0
+        },
+        "stub": {
+          "passed": true,
+          "status": "REVIEW_REQUIRED",
+          "findings": 5,
+          "source_grounded": 5,
+          "extractive_faithfulness": 1.0,
+          "unsupported_extractive_findings": 0
+        }
+      }
+    },
+    {
+      "id": "x-grade-extension",
+      "retrieval": {
+        "baseline": {
+          "complete_clause_recall": 1.0,
+          "expected_clauses": 5,
+          "covered_clauses": 5,
+          "page_relevance_proxy": 0.42857142857142855,
+          "returned_units": 7,
+          "returned_characters": 6290
+        },
+        "current": {
+          "complete_clause_recall": 1.0,
+          "expected_clauses": 5,
+          "covered_clauses": 5,
+          "page_relevance_proxy": 0.5454545454545454,
+          "returned_units": 11,
+          "returned_characters": 4059
+        }
+      },
+      "workflows": {
+        "deterministic": {
+          "passed": true,
+          "status": "REVIEW_REQUIRED",
+          "findings": 5,
+          "source_grounded": 5,
+          "extractive_faithfulness": 1.0,
+          "unsupported_extractive_findings": 0
+        },
+        "stub": {
+          "passed": true,
+          "status": "REVIEW_REQUIRED",
+          "findings": 5,
+          "source_grounded": 5,
+          "extractive_faithfulness": 1.0,
+          "unsupported_extractive_findings": 0
+        }
+      }
+    },
+    {
+      "id": "x-grade-summer",
+      "retrieval": {
+        "baseline": {
+          "complete_clause_recall": 0.8,
+          "expected_clauses": 5,
+          "covered_clauses": 4,
+          "page_relevance_proxy": 0.375,
+          "returned_units": 8,
+          "returned_characters": 5639
+        },
+        "current": {
+          "complete_clause_recall": 1.0,
+          "expected_clauses": 5,
+          "covered_clauses": 5,
+          "page_relevance_proxy": 0.6666666666666666,
+          "returned_units": 9,
+          "returned_characters": 3218
+        }
+      },
+      "workflows": {
+        "deterministic": {
+          "passed": true,
+          "status": "REVIEW_REQUIRED",
+          "findings": 5,
+          "source_grounded": 5,
+          "extractive_faithfulness": 1.0,
+          "unsupported_extractive_findings": 0
+        },
+        "stub": {
+          "passed": true,
+          "status": "REVIEW_REQUIRED",
+          "findings": 5,
+          "source_grounded": 5,
+          "extractive_faithfulness": 1.0,
+          "unsupported_extractive_findings": 0
+        }
+      }
+    },
+    {
+      "id": "x-grade-results",
+      "retrieval": {
+        "baseline": {
+          "complete_clause_recall": 1.0,
+          "expected_clauses": 5,
+          "covered_clauses": 5,
+          "page_relevance_proxy": 0.375,
+          "returned_units": 8,
+          "returned_characters": 7238
+        },
+        "current": {
+          "complete_clause_recall": 1.0,
+          "expected_clauses": 5,
+          "covered_clauses": 5,
+          "page_relevance_proxy": 0.5555555555555556,
+          "returned_units": 9,
+          "returned_characters": 4572
+        }
+      },
+      "workflows": {
+        "deterministic": {
+          "passed": true,
+          "status": "REVIEW_REQUIRED",
+          "findings": 5,
+          "source_grounded": 5,
+          "extractive_faithfulness": 1.0,
+          "unsupported_extractive_findings": 0
+        },
+        "stub": {
+          "passed": true,
+          "status": "REVIEW_REQUIRED",
+          "findings": 5,
+          "source_grounded": 5,
+          "extractive_faithfulness": 1.0,
+          "unsupported_extractive_findings": 0
+        }
+      }
+    },
+    {
+      "id": "retest-documentation",
+      "retrieval": {
+        "baseline": {
+          "complete_clause_recall": 0.4,
+          "expected_clauses": 5,
+          "covered_clauses": 2,
+          "page_relevance_proxy": 0.25,
+          "returned_units": 4,
+          "returned_characters": 3850
+        },
+        "current": {
+          "complete_clause_recall": 1.0,
+          "expected_clauses": 5,
+          "covered_clauses": 5,
+          "page_relevance_proxy": 0.45454545454545453,
+          "returned_units": 11,
+          "returned_characters": 4889
+        }
+      },
+      "workflows": {
+        "deterministic": {
+          "passed": true,
+          "status": "REVIEW_REQUIRED",
+          "findings": 5,
+          "source_grounded": 5,
+          "extractive_faithfulness": 1.0,
+          "unsupported_extractive_findings": 0
+        },
+        "stub": {
+          "passed": true,
+          "status": "REVIEW_REQUIRED",
+          "findings": 5,
+          "source_grounded": 5,
+          "extractive_faithfulness": 1.0,
+          "unsupported_extractive_findings": 0
+        }
+      }
+    },
+    {
+      "id": "unsupported-parking",
+      "retrieval": {},
+      "workflows": {
+        "deterministic": {
+          "passed": true,
+          "status": "ESCALATE",
+          "findings": 0,
+          "source_grounded": 0,
+          "extractive_faithfulness": null,
+          "unsupported_extractive_findings": 0
+        },
+        "stub": {
+          "passed": true,
+          "status": "ESCALATE",
+          "findings": 0,
+          "source_grounded": 0,
+          "extractive_faithfulness": null,
+          "unsupported_extractive_findings": 0
+        }
+      }
+    },
+    {
+      "id": "unsupported-scholarship",
+      "retrieval": {},
+      "workflows": {
+        "deterministic": {
+          "passed": true,
+          "status": "ESCALATE",
+          "findings": 0,
+          "source_grounded": 0,
+          "extractive_faithfulness": null,
+          "unsupported_extractive_findings": 0
+        },
+        "stub": {
+          "passed": true,
+          "status": "ESCALATE",
+          "findings": 0,
+          "source_grounded": 0,
+          "extractive_faithfulness": null,
+          "unsupported_extractive_findings": 0
+        }
+      }
+    },
+    {
+      "id": "unsupported-housing",
+      "retrieval": {},
+      "workflows": {
+        "deterministic": {
+          "passed": true,
+          "status": "ESCALATE",
+          "findings": 0,
+          "source_grounded": 0,
+          "extractive_faithfulness": null,
+          "unsupported_extractive_findings": 0
+        },
+        "stub": {
+          "passed": true,
+          "status": "ESCALATE",
+          "findings": 0,
+          "source_grounded": 0,
+          "extractive_faithfulness": null,
+          "unsupported_extractive_findings": 0
+        }
+      }
+    },
+    {
+      "id": "unsupported-transcript",
+      "retrieval": {},
+      "workflows": {
+        "deterministic": {
+          "passed": true,
+          "status": "ESCALATE",
+          "findings": 0,
+          "source_grounded": 0,
+          "extractive_faithfulness": null,
+          "unsupported_extractive_findings": 0
+        },
+        "stub": {
+          "passed": true,
+          "status": "ESCALATE",
+          "findings": 0,
+          "source_grounded": 0,
+          "extractive_faithfulness": null,
+          "unsupported_extractive_findings": 0
+        }
+      }
+    }
+  ]
+}

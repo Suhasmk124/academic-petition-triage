@@ -12,6 +12,7 @@ def main():
     sys.stdout.reconfigure(encoding='utf-8', errors='replace')
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--service', action='store_true', help='Also run local HTTP + separate-worker integration smoke')
+    parser.add_argument('--evaluation', action='store_true', help='Also run the fixed 24-scenario local evaluation')
     args = parser.parse_args()
     suite = unittest.defaultTestLoader.discover(str(ROOT / 'tests'), pattern='test_*.py')
     unit = unittest.TextTestRunner(verbosity=1).run(suite)
@@ -42,10 +43,16 @@ def main():
     if args.service:
         from check_service import main as service_smoke
         service_report = service_smoke()
+    evaluation_report = None
+    if args.evaluation:
+        from evaluate import main as evaluate
+        evaluation_report = evaluate()
     report = dict(service_http_smoke_passed=bool(service_report), unit_tests=unit.testsRun, unit_passed=True, retrieval_checks=11,
                   live_workflows=results, hosted_orchestration_implemented=True, live_hosted_validation=False,
                   semantic_entailment_verified=False,
-                  scope='Focused regressions; not the required full 20+ scenario quality evaluation.')
+                  fixed_scenarios=evaluation_report['scenarios'] if evaluation_report else None,
+                  fixed_workflow_runs=evaluation_report['workflow_runs'] if evaluation_report else None,
+                  scope='Local regression and extractive evaluation only; hosted semantic quality and prompt A/B remain unvalidated.')
     (ROOT / 'evaluations/project_checks.json').write_text(json.dumps(report, indent=2), encoding='utf-8')
     print(f'PASS: {unit.testsRun} unit tests, 11 retrieval checks, {len(results)} real workflow cases.')
 

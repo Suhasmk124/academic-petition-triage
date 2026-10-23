@@ -1,0 +1,29 @@
+{
+  "scope": "Manual browser verification through the local interface using synthetic petitions; not an automated browser regression suite or accessibility audit.",
+  "date": "2026-10-23",
+  "url": "http://127.0.0.1:8000/",
+  "mode": "stub",
+  "passed": true,
+  "checks": {
+    "worker_connectivity_visible": true,
+    "synthetic_declaration_required_before_submission": true,
+    "whitespace_input_blocked": true,
+    "character_limit_attribute": 4000,
+    "attendance_result_citations": 3,
+    "medical_examination_result_citations": 6,
+    "x_grade_result_citations": 5,
+    "generated_locator_notice_expanded": true,
+    "supporting_record_checklists_rendered": true,
+    "unsupported_request_escalated_without_findings": true,
+    "successive_submissions_work": true,
+    "desktop_layout_width": 1440,
+    "mobile_layout_width": 390,
+    "mobile_document_width": 375,
+    "mobile_horizontal_overflow": false,
+    "browser_console_errors": 0,
+    "human_decision_notice_visible": true,
+    "simulated_model_notice_visible": true
+  },
+  "preview": "outputs/portal-preview.png",
+  "not_covered": ["Browser network interruption and manual polling resume", "Full accessibility audit", "Cross-browser compatibility", "Hosted model semantic accuracy"]
+}
