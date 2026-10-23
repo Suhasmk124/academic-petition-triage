@@ -1,0 +1,24 @@
+# Local environments and Python caches
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+
+# Secrets and local configuration
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# Generated vector databases and runtime output
+data/chroma_db/
+logs/*
+!logs/.gitkeep
+
+# Editor and OS files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
