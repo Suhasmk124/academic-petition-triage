@@ -20,6 +20,10 @@ Retrieve academic regulations and support human review of synthetic student peti
 
 The default workflow.py remains deterministic. The separate agent_workflow.py now implements two separately prompted LLM-backed roles with model-selected search/fetch/quote-check tools, bounded handoff and deterministic fallback. One live public-policy tool handoff completed, but a source spot-check found semantic errors the model verifier missed. Narrow guards and regressions now cover those observed errors; post-guard live validation and broad semantic accuracy remain open. Automated agent tests use scripted responses. See docs/hosted_agents.md. Do not claim live A1/A2/A3 completion from stub tests.
 
+## API and background worker
+
+The local service now supports asynchronous submission, run-ID polling, persistent queue/results, invalid-request quarantine and a separate worker. It defaults to a simulated model with real local source checks and makes no hosted API calls. Hosted mode is not enabled through the service. See docs/api_queue_stage.md for commands, payloads and limitations. SQLite is the local queue prototype; Docker and a distributed broker are not implemented yet.
+
 ## PowerShell commands
 
 Use the existing Python 3.11 virtual environment. No package reinstall is required for the current project.
@@ -44,10 +48,10 @@ Corpus: IISc Undergraduate Handbook 2025-26 in data/raw/. This is third-party so
 - docs/proposals/index_corpus.py: the original proposed indexer, retained as historical material. The active maintained implementation is now src/index_corpus.py.
 - docs/clause_retrieval_update.md: change scope, validation and limitations.
 
-This chat now works directly in C:\Sauce\academic-petition-triage. The active workflow changes are implemented there. See docs/structured_assessment_update.md for scope and limitations. All three route names exist in the contract; only REFER_TO_COMMITTEE is currently emitted. Request text is validated through run_petition before the graph, but the API/quarantine requirement is still incomplete.
+This chat now works directly in C:\Sauce\academic-petition-triage. The active workflow changes are implemented there. See docs/structured_assessment_update.md for scope and limitations. All three route names exist in the contract; only REFER_TO_COMMITTEE is currently emitted. Request text is validated through run_petition before the graph, and API submissions are now validated and quarantined before enqueueing.
 
 ## Remaining instructor requirements
 
-Live validation and evaluation of the hosted roles and their semantic entailment judgments; evidence-based recommendations beyond referral; request contracts and quarantine; asynchronous FastAPI and queue; prompt versions and A/B evaluation; 20+ fixed evaluation scenarios and groundedness/faithfulness metrics; injection and output defenses; timeout/retry/backoff/circuit breaker; token/cost attribution; feedback; tracing, metrics and dashboards; Docker Compose and worker scaling; stub model service and Locust/SLO measurements; caching/rate limiting; runbooks, incident log and web client.
+Live validation and evaluation of the hosted roles and their semantic entailment judgments; evidence-based recommendations beyond referral; Service authentication and distributed queue hardening; prompt versions and A/B evaluation; 20+ fixed evaluation scenarios and groundedness/faithfulness metrics; injection and output defenses; timeout/retry/backoff/circuit breaker; token/cost attribution; feedback; tracing, metrics and dashboards; Docker Compose and worker scaling; stub model service and Locust/SLO measurements; caching/rate limiting; runbooks, incident log and web client.
 
 Configuration still contains the prototype's embedding-model name; the environment-based configuration requirement is not complete. Use synthetic petitions only. Do not commit student records, credentials, virtual environments or generated databases.

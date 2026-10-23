@@ -1,0 +1,19 @@
+{
+  "http_smoke_passed": true,
+  "default_mode": "stub",
+  "hosted_credentials_disabled": true,
+  "submit_status": 202,
+  "observed_job_states": [
+    "QUEUED",
+    "RUNNING",
+    "SUCCEEDED"
+  ],
+  "submit_seconds": 0.61,
+  "cited_findings": 3,
+  "invalid_status": 422,
+  "invalid_request_started_workflow": false,
+  "unsupported_triage": "ESCALATE",
+  "result_survived_api_restart": true,
+  "billable_model_requests": 0,
+  "scope": "One local functional HTTP/worker smoke test, not a throughput benchmark or SLO measurement."
+}

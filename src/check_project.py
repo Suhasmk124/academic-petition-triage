@@ -1,4 +1,5 @@
 """One combined regression run after implementation changes."""
+import argparse
 import json
 import sys
 import unittest
@@ -9,6 +10,9 @@ sys.path.insert(0, str(ROOT / 'src'))
 
 def main():
     sys.stdout.reconfigure(encoding='utf-8', errors='replace')
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--service', action='store_true', help='Also run local HTTP + separate-worker integration smoke')
+    args = parser.parse_args()
     suite = unittest.defaultTestLoader.discover(str(ROOT / 'tests'), pattern='test_*.py')
     unit = unittest.TextTestRunner(verbosity=1).run(suite)
     if not unit.wasSuccessful():
@@ -34,7 +38,11 @@ def main():
         if expected_findings == 3:
             (ROOT / 'evaluations/assessment_sample.json').write_text(json.dumps(
                 {k: v for k, v in result.items() if k != 'evidence'}, indent=2, ensure_ascii=False), encoding='utf-8')
-    report = dict(unit_tests=unit.testsRun, unit_passed=True, retrieval_checks=11,
+    service_report = None
+    if args.service:
+        from check_service import main as service_smoke
+        service_report = service_smoke()
+    report = dict(service_http_smoke_passed=bool(service_report), unit_tests=unit.testsRun, unit_passed=True, retrieval_checks=11,
                   live_workflows=results, hosted_orchestration_implemented=True, live_hosted_validation=False,
                   semantic_entailment_verified=False,
                   scope='Focused regressions; not the required full 20+ scenario quality evaluation.')
