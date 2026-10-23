@@ -1,0 +1,88 @@
+{
+  "mode": "HOSTED_AGENTS",
+  "passes": 1,
+  "metrics": [
+    {
+      "agent": "investigator",
+      "prompt_version": "investigator_v2",
+      "model_calls": 2,
+      "tool_calls": 1,
+      "tools_used": [
+        "search_regulations"
+      ],
+      "success": true,
+      "latency_seconds": 18.907
+    },
+    {
+      "agent": "verifier",
+      "prompt_version": "verifier_v3",
+      "model_calls": 2,
+      "tool_calls": 1,
+      "tools_used": [
+        "verify_claim_quotes"
+      ],
+      "success": true,
+      "latency_seconds": 77.344
+    }
+  ],
+  "model_usage": [
+    {
+      "agent": "investigator",
+      "attempt": 1,
+      "success": true,
+      "input_tokens": 823,
+      "output_tokens": 68,
+      "billed_cost_usd": null,
+      "pacing_seconds": 0.0,
+      "http_status": 200,
+      "latency_seconds": 0.6570000000028813
+    },
+    {
+      "agent": "investigator",
+      "attempt": 1,
+      "success": true,
+      "input_tokens": 4446,
+      "output_tokens": 850,
+      "billed_cost_usd": null,
+      "pacing_seconds": 9.357,
+      "http_status": 200,
+      "latency_seconds": 11.157000000002881
+    },
+    {
+      "agent": "verifier",
+      "attempt": 1,
+      "success": true,
+      "input_tokens": 2371,
+      "output_tokens": 731,
+      "billed_cost_usd": null,
+      "pacing_seconds": 44.432,
+      "http_status": 200,
+      "latency_seconds": 45.93799999999828
+    },
+    {
+      "agent": "verifier",
+      "attempt": 1,
+      "success": true,
+      "input_tokens": 2535,
+      "output_tokens": 751,
+      "billed_cost_usd": null,
+      "pacing_seconds": 30.118,
+      "http_status": 200,
+      "latency_seconds": 31.312000000001717
+    }
+  ],
+  "human_review_required": true,
+  "final_decision_made": false,
+  "technical_flow_passed": true,
+  "observed_pre_guard_status": "REVIEW_REQUIRED",
+  "semantic_spot_check_passed": false,
+  "model_accepted_claims": 3,
+  "source_spot_check_errors": {
+    "C2": "The certificate issuer must preserve the CMO, Health Centre, IISc requirement; do not introduce alternative issuers.",
+    "C3": "The application clause names SLCM; SAP is named for document upload. Preserve that distinction."
+  },
+  "post_guard_action": "Re-search is now required; repeated failure escalates. These exact observed errors are covered by offline regression checks. No further live call was made after adding the guards.",
+  "test_input": "General public-handbook policy question; no student data.",
+  "scope": "One successful provider/tool handoff. NOT a semantic accuracy pass or full A1/A2/A3 acceptance.",
+  "account_tier": "User-confirmed Free Plan; billing was not queried."
+}

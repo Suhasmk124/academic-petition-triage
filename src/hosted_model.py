@@ -1,5 +1,8 @@
 """Hosted chat adapter with opt-in free-plan confirmation and bounded HTTP attempts."""
 import os
+import json
+import math
+import re
 import time
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -47,6 +50,9 @@ class HostedChat:
         self.events = []
         self.failures = 0
         self.open_until = 0.0
+        self.token_remaining = None
+        self.token_limit = None
+        self.token_reset_at = 0.0
 
     def close(self):
         self.client.close()
@@ -57,14 +63,25 @@ class HostedChat:
         body = dict(model=self.settings.model, messages=messages,
                     tools=tools, tool_choice='auto', max_completion_tokens=self.settings.max_output_tokens)
         started = self.clock()
+        estimated_tokens = math.ceil(len(json.dumps(body)) / 4) + self.settings.max_output_tokens
+        pacing_seconds = 0.0
+        if self.token_limit is not None and estimated_tokens > self.token_limit:
+            raise ModelUnavailable('Request estimate exceeds the free token limit; reduce context/output size.')
+        if self.token_remaining is not None and estimated_tokens > self.token_remaining:
+            pacing_seconds = max(0.0, self.token_reset_at - self.clock()) + 1.0
+            if pacing_seconds > 65:
+                raise ModelUnavailable('Free token window requires a longer pause; retry later.')
+            self.sleep(pacing_seconds)
+            self.token_remaining = None
         for attempt in range(2):
             event = dict(agent=role, attempt=attempt + 1, success=False,
-                         input_tokens=None, output_tokens=None, billed_cost_usd=None)
+                         input_tokens=None, output_tokens=None, billed_cost_usd=None, pacing_seconds=round(pacing_seconds, 3))
             try:
                 response = self.client.post(self.settings.base_url.rstrip('/') + '/chat/completions',
                                             headers={'Authorization': 'Bearer ' + self.settings.api_key},
                                             json=body, timeout=self.settings.timeout)
                 event['http_status'] = response.status_code
+                self._rate_headers(response.headers)
                 # Do not retry free-quota exhaustion or switch provider/model automatically.
                 if response.status_code == 429:
                     raise ModelUnavailable('Free quota/rate limit reached; no paid fallback was attempted.')
@@ -74,6 +91,13 @@ class HostedChat:
                     self.sleep(.5)
                     continue
                 if response.status_code != 200:
+                    try:
+                        error = response.json().get('error', {})
+                        event['provider_error_code'] = str(error.get('code', ''))[:100]
+                        event['provider_error_type'] = str(error.get('type', ''))[:100]
+                        event['provider_error_message'] = str(error.get('message', '')).replace(self.settings.api_key, '[REDACTED]')[:600]
+                    except (ValueError, AttributeError):
+                        pass
                     raise ModelUnavailable(f'Model request failed with HTTP {response.status_code}.')
                 data = response.json()
                 choice = data['choices'][0]
@@ -106,6 +130,18 @@ class HostedChat:
                 raise ModelUnavailable('Malformed model response.') from exc
         self._failure()
         raise ModelUnavailable('Model transport failed after two attempts.')
+
+    def _rate_headers(self, headers):
+        try:
+            self.token_remaining = int(headers['x-ratelimit-remaining-tokens'])
+            self.token_limit = int(headers['x-ratelimit-limit-tokens'])
+            duration = headers.get('x-ratelimit-reset-tokens', '0s')
+            matches = re.findall(r'([0-9.]+)(ms|s|m|h)', duration)
+            seconds = sum(float(number) * {'ms': .001, 's': 1, 'm': 60, 'h': 3600}[unit]
+                          for number, unit in matches)
+            self.token_reset_at = self.clock() + seconds
+        except (KeyError, ValueError, TypeError):
+            self.token_remaining = None
 
     def _failure(self):
         self.failures += 1

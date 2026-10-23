@@ -7,7 +7,7 @@ from pathlib import Path
 from unittest.mock import patch
 import httpx
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'src'))
-from agent_workflow import EvidenceTools, SCHEMAS, run_agents, run_hosted
+from agent_workflow import EvidenceTools, SCHEMAS, Draft, critical_detail_errors, run_agents, run_hosted
 from hosted_model import HostedChat, HostedSettings, ModelUnavailable
 
 CITATION = {'evidence_id': 'fixture-attendance', 'exact_quote': 'Attendance must be at least 80%.',
@@ -20,6 +20,10 @@ REVIEW = {'verdicts': [{'claim_id': 'c1', 'supported': True, 'reason': 'Threshol
           'needs_research': False, 'research_query': ''}
 
 def final(content):
+    if 'claims' in content:
+        content = copy.deepcopy(content)
+        for claim in content['claims']:
+            claim.pop('supporting_quote', None)
     return {'role': 'assistant', 'content': json.dumps(content)}
 
 def call(name, arguments):
@@ -30,7 +34,7 @@ def search_call():
     return call('search_regulations', {'query': 'attendance'})
 
 def verify_call():
-    return call('verify_claim_quotes', {'quotes': [{'evidence_id': CLAIM['evidence_id'], 'quote': CLAIM['supporting_quote']}]})
+    return call('verify_claim_quotes', {'evidence_ids': [CLAIM['evidence_id']]})
 
 class ScriptedModel:
     events = []
@@ -48,6 +52,19 @@ def fixture_tools():
                          quote_check=lambda args: json.dumps({'quote_supported': args['quote'] == CITATION['exact_quote']}))
 
 class AgentTests(unittest.TestCase):
+    def test_critical_portal_and_issuer_errors_are_rejected(self):
+        draft = Draft.model_validate({'claims': [
+            {'claim_id': 'portal', 'statement': 'Apply on the SAP portal within seven days.', 'evidence_id': 'portal', 'supporting_quote': 'SLCM application; SAP upload.'},
+            {'claim_id': 'issuer', 'statement': 'Certificate issued by CMO, Health Centre or IISc.', 'evidence_id': 'issuer', 'supporting_quote': 'CMO, Health Centre, IISc.'}]})
+        errors = critical_detail_errors(draft, {'portal': {'clause_id': '8.1(iii)'}, 'issuer': {'clause_id': '8.1(ii)'}})
+        self.assertEqual(set(errors), {'portal', 'issuer'})
+
+    def test_provider_schemas_inline_nested_argument_fields(self):
+        schema = next(s for s in SCHEMAS if s['function']['name'] == 'verify_claim_quotes')
+        parameters = schema['function']['parameters']
+        self.assertNotIn('$ref', json.dumps(parameters))
+        self.assertEqual(parameters['properties']['evidence_ids']['items']['type'], 'string')
+
     def run_model(self, model):
         with patch('workflow.run_petition', return_value={'status': 'ESCALATE', 'assessment': {'findings': []}}):
             return run_agents('My attendance is 72% due to illness.', model, fixture_tools())
@@ -170,6 +187,28 @@ class AdapterTests(unittest.TestCase):
         self.assertEqual(len(count), 2)
         self.assertEqual(model.events[-1]['input_tokens'], 10)
         self.assertIsNone(model.events[-1]['billed_cost_usd'])
+
+    def test_pacing_uses_provider_token_headers(self):
+        sleeps = []
+        def respond(request):
+            return httpx.Response(200, json={'choices': [{'message': {'content': '{}'}}]},
+                headers={'x-ratelimit-remaining-tokens': '1', 'x-ratelimit-limit-tokens': '8000',
+                         'x-ratelimit-reset-tokens': '2s'})
+        model = HostedChat(self.settings(), client=httpx.Client(transport=httpx.MockTransport(respond)),
+                           sleep=sleeps.append, clock=lambda: 1)
+        model.complete('investigator', [], [])
+        model.complete('verifier', [], [])
+        self.assertEqual(sleeps, [3.0])
+        self.assertEqual(model.events[-1]['pacing_seconds'], 3.0)
+
+    def test_provider_error_diagnostic_redacts_key(self):
+        def respond(request):
+            return httpx.Response(400, json={'error': {'code': 'tool_use_failed', 'message': 'fixture-secret must not leak'}})
+        model = HostedChat(self.settings(), client=httpx.Client(transport=httpx.MockTransport(respond)))
+        with self.assertRaises(ModelUnavailable):
+            model.complete('verifier', [], [])
+        self.assertNotIn('fixture-secret', json.dumps(model.events))
+        self.assertEqual(model.events[-1]['provider_error_code'], 'tool_use_failed')
 
     def test_circuit_opens_after_three_failed_calls(self):
         requests = []

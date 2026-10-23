@@ -18,7 +18,7 @@ Retrieve academic regulations and support human review of synthetic student peti
 - A LangGraph investigation/verification handoff with typed extractive findings, exact citations, supporting-record checklists and human-review reasons. Each finding is bound to canonical source text and citation metadata. One re-search is allowed; repeated failures discard findings and escalate.
 - Seven focused retrieval cases and four quotation/integrity checks in src/test_retrieval.py.
 
-The default workflow.py remains deterministic. The separate agent_workflow.py now implements two separately prompted LLM-backed roles with model-selected search/fetch/quote-check tools, bounded handoff and deterministic fallback. Hosted configuration and live validation are pending; automated agent tests use scripted model responses. See docs/hosted_agents.md. Do not claim live A1/A2/A3 completion from stub tests.
+The default workflow.py remains deterministic. The separate agent_workflow.py now implements two separately prompted LLM-backed roles with model-selected search/fetch/quote-check tools, bounded handoff and deterministic fallback. One live public-policy tool handoff completed, but a source spot-check found semantic errors the model verifier missed. Narrow guards and regressions now cover those observed errors; post-guard live validation and broad semantic accuracy remain open. Automated agent tests use scripted responses. See docs/hosted_agents.md. Do not claim live A1/A2/A3 completion from stub tests.
 
 ## PowerShell commands
 

@@ -22,3 +22,6 @@ logs/*
 .idea/
 .DS_Store
 Thumbs.db
+
+# Local diagnostic scripts
+work/
