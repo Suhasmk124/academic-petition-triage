@@ -14,8 +14,8 @@ Retrieve academic regulations and support human review of synthetic student peti
 - Stable record IDs and incremental upserts. An unchanged repeat run re-embeds zero records. The legacy collection is preserved.
 - Hybrid lexical/vector retrieval with reviewed clause preference, linked section evidence and full clause quotations. A single retrieval makes one embedding request and one vector query and returns at most four passage groups.
 - Three callable LangChain tools: search_regulations, fetch_exact_clause, verify_source_quote.
-- Quote-presence and source-integrity checks. These do NOT check claim entailment.
-- A LangGraph investigation node and verification node, with at most two searches and review/escalation states. Existing workflow output remains a placeholder assessment with attendance-specific keyword checks.
+- Quote-presence, source-integrity and extractive finding/citation checks. These do NOT check semantic claim entailment or academic eligibility.
+- A LangGraph investigation/verification handoff with typed extractive findings, exact citations, supporting-record checklists and human-review reasons. Each finding is bound to canonical source text and citation metadata. One re-search is allowed; repeated failures discard findings and escalate.
 - Seven focused retrieval cases and four quotation/integrity checks in src/test_retrieval.py.
 
 These are Python workflow nodes, not two independent LLM agents. No chat LLM is configured. The current graph calls only search_regulations; having three tools defined does not satisfy the requirement for agent-selected tool use.
@@ -28,7 +28,7 @@ Use the existing Python 3.11 virtual environment. No package reinstall is requir
 .\.venv\Scripts\Activate.ps1
 python src\index_corpus.py --preview
 python src\index_corpus.py --apply
-python src\test_retrieval.py
+python src\check_project.py
 python src\workflow.py
 ```
 
@@ -44,10 +44,10 @@ Corpus: IISc Undergraduate Handbook 2025-26 in data/raw/. This is third-party so
 - docs/proposals/index_corpus.py: the original proposed indexer, retained as historical material. The active maintained implementation is now src/index_corpus.py.
 - docs/clause_retrieval_update.md: change scope, validation and limitations.
 
-The original C:\Sauce project folder is not modified by the assistant's writable working-copy tests. Pull the committed source changes and run --apply there to create its local v2 index.
+This chat now works directly in C:\Sauce\academic-petition-triage. The active workflow changes are implemented there. See docs/structured_assessment_update.md for scope and limitations. All three route names exist in the contract; only REFER_TO_COMMITTEE is currently emitted. Request text is validated through run_petition before the graph, but the API/quarantine requirement is still incomplete.
 
 ## Remaining instructor requirements
 
-Structured claim-level assessments and entailment verification; two independent LLM-backed agents with agent-selected tools; request contracts and quarantine; asynchronous FastAPI and queue; prompt versions and A/B evaluation; 20+ fixed evaluation scenarios and groundedness/faithfulness metrics; injection and output defenses; timeout/retry/backoff/circuit breaker; token/cost attribution; feedback; tracing, metrics and dashboards; Docker Compose and worker scaling; stub model service and Locust/SLO measurements; caching/rate limiting; runbooks, incident log and web client.
+Semantic claim entailment and evidence-based eligibility recommendations beyond referral; two independent LLM-backed agents with agent-selected tools; request contracts and quarantine; asynchronous FastAPI and queue; prompt versions and A/B evaluation; 20+ fixed evaluation scenarios and groundedness/faithfulness metrics; injection and output defenses; timeout/retry/backoff/circuit breaker; token/cost attribution; feedback; tracing, metrics and dashboards; Docker Compose and worker scaling; stub model service and Locust/SLO measurements; caching/rate limiting; runbooks, incident log and web client.
 
 Configuration still contains the prototype's embedding-model name; the environment-based configuration requirement is not complete. Use synthetic petitions only. Do not commit student records, credentials, virtual environments or generated databases.

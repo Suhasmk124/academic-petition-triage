@@ -1,0 +1,34 @@
+{
+  "unit_tests": 14,
+  "unit_passed": true,
+  "retrieval_checks": 11,
+  "live_workflows": [
+    {
+      "petition_type": "ATTENDANCE",
+      "status": "REVIEW_REQUIRED",
+      "searches": 1,
+      "findings": 3
+    },
+    {
+      "petition_type": "TERMINAL_MEDICAL",
+      "status": "REVIEW_REQUIRED",
+      "searches": 1,
+      "findings": 6
+    },
+    {
+      "petition_type": "X_GRADE",
+      "status": "REVIEW_REQUIRED",
+      "searches": 1,
+      "findings": 5
+    },
+    {
+      "petition_type": "UNSUPPORTED",
+      "status": "ESCALATE",
+      "searches": 1,
+      "findings": 0
+    }
+  ],
+  "independent_llm_agents": false,
+  "semantic_entailment_verified": false,
+  "scope": "Focused regressions; not the required full 20+ scenario quality evaluation."
+}

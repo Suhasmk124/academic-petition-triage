@@ -1,228 +1,84 @@
+"""Deterministic LangGraph evidence handoff. Independent LLM agents remain planned."""
+import argparse
+import json
+import sys
+from typing import Literal, TypedDict
+from langgraph.graph import END, START, StateGraph
+from assessment import Assessment, PetitionRequest, Verification, build_assessment, verify_findings
+from retrieval import read_records, resources, search_regulations, validate_record
 
-from typing import TypedDict, Literal
+MAX_SEARCHES = 2
 
-from langgraph.graph import StateGraph, START, END
-from retrieval import search_regulations
-
-
-# --------------------------------------------------
-# 1. WORKFLOW STATE
-# --------------------------------------------------
-
-class PetitionState(TypedDict):
+class PetitionState(TypedDict, total=False):
     petition: str
-    evidence: str
-    assessment: str
-    verification: str
+    evidence: dict
+    assessment: dict
+    verification: dict
     searches: int
     status: str
 
+def investigate(state):
+    query = state['petition']
+    if state.get('searches', 0):
+        query = ' '.join(state.get('assessment', {}).get('missing_provisions', [])) + ' ' + query
+    try:
+        evidence = json.loads(search_regulations.invoke({'query': query}))
+        if not isinstance(evidence, dict):
+            raise ValueError('Retrieval must return an object')
+        assessment = build_assessment(state['petition'], evidence)
+    except Exception as exc:
+        evidence = {'status': 'NO_SUFFICIENT_EVIDENCE', 'passages': [],
+                    'reason': f'Retrieval failure: {type(exc).__name__}'}
+        assessment = build_assessment(state['petition'], evidence)
+    return {'evidence': evidence, 'assessment': assessment.model_dump(),
+            'searches': state.get('searches', 0) + 1}
 
-# --------------------------------------------------
-# 2. INVESTIGATION AGENT
-# --------------------------------------------------
+def verify(state):
+    assessment = Assessment.model_validate(state['assessment'])
+    if assessment.petition_type == 'UNSUPPORTED':
+        check = Verification(passed=False, errors=['This petition type is outside the reviewed pilot scope.'])
+    else:
+        try:
+            collection, _ = resources()
+            check = verify_findings(assessment.findings, read_records(collection), validate_record)
+        except Exception as exc:
+            check = Verification(passed=False, errors=[f'Source verification unavailable: {type(exc).__name__}'])
+    if assessment.missing_provisions:
+        check.passed = False
+        check.errors.append('Missing provisions: ' + ', '.join(assessment.missing_provisions))
+    if check.passed:
+        status = 'REVIEW_REQUIRED'
+        assessment.reasons.append('Every extractive finding matches its canonical quotation and citation metadata.')
+    elif state['searches'] < MAX_SEARCHES and assessment.petition_type != 'UNSUPPORTED':
+        status = 'RETRY'
+    else:
+        status = 'ESCALATE'
+        assessment.findings = []
+        assessment.reasons.append('Evidence could not be verified; no eligibility position is supported.')
+    assessment.routing_recommendation = 'REFER_TO_COMMITTEE'
+    return {'assessment': assessment.model_dump(), 'verification': check.model_dump(), 'status': status}
 
-def investigate(state: PetitionState) -> dict:
-    """Retrieve relevant academic regulations for a petition."""
-
-    query = state["petition"]
-
-    # Use a more focused query if the first search was insufficient.
-    if state["searches"] > 0:
-        query = (
-            "Find exact academic handbook clauses, attendance rules, "
-            "medical condonation requirements, CMO certificates, "
-            "and application deadlines relevant to: "
-            + state["petition"]
-        )
-
-    evidence = search_regulations.invoke({"query": query})
-
-    return {
-        "evidence": evidence,
-        "searches": state["searches"] + 1,
-        "assessment": (
-            "Preliminary assessment only. Identify the applicable rule, "
-            "requirements, exceptions, and missing information. "
-            "Do not make a final administrative decision."
-        ),
-    }
-
-
-# --------------------------------------------------
-# 3. EVIDENCE VERIFICATION
-# --------------------------------------------------
-
-def check_attendance_evidence(evidence: str) -> tuple[bool, list[str]]:
-    """
-    Basic keyword checks for the attendance-petition example.
-    These checks do not prove that every claim is supported.
-    """
-
-    text = evidence.lower()
-    missing = []
-
-    if "80%" not in text:
-        missing.append(
-            "The 80% attendance threshold was not retrieved."
-        )
-
-    if "condoned" not in text or "medical" not in text:
-        missing.append(
-            "The medical-condonation provision was not retrieved."
-        )
-
-    if "cmo" not in text:
-        missing.append(
-            "The CMO medical-certificate requirement was not retrieved."
-        )
-
-    return len(missing) == 0, missing
-
-
-def verify(state: PetitionState) -> dict:
-    """Check whether the retrieved evidence contains required information."""
-
-    evidence = state["evidence"]
-
-    # Check for missing retrieval results.
-    if (
-        not evidence.strip()
-        or "NO_SUFFICIENT_EVIDENCE" in evidence
-        or "NO_EVIDENCE" in evidence
-    ):
-        if state["searches"] < 2:
-            return {
-                "verification": (
-                    "Insufficient evidence. A focused retry is required."
-                ),
-                "status": "RETRY",
-            }
-
-        return {
-            "verification": (
-                "Evidence remained insufficient after two searches. "
-                "Human review is required."
-            ),
-            "status": "ESCALATE",
-        }
-
-    # Perform the required attendance-evidence checks.
-    passed, missing = check_attendance_evidence(evidence)
-
-    if not passed:
-        message = "Required evidence checks failed: " + " ".join(missing)
-
-        if state["searches"] < 2:
-            return {
-                "verification": message,
-                "status": "RETRY",
-            }
-
-        return {
-            "verification": (
-                message + " Human review is required."
-            ),
-            "status": "ESCALATE",
-        }
-
-    return {
-        "verification": (
-            "Required attendance evidence checks passed. "
-            "The retrieved text includes the attendance threshold, "
-            "medical-condonation provision, and CMO requirement. "
-            "Individual claims and citations still require detailed "
-            "verification. No final administrative decision was made."
-        ),
-        "status": "REVIEW_REQUIRED",
-    }
-
-
-# --------------------------------------------------
-# 4. ROUTING AND RETRY CONTROL
-# --------------------------------------------------
-
-def route_after_verification(
-    state: PetitionState,
-) -> Literal["investigate", "finish"]:
-    """Retry once when required evidence checks fail."""
-
-    if state["status"] == "RETRY" and state["searches"] < 2:
-        return "investigate"
-
-    return "finish"
-
-
-# --------------------------------------------------
-# 5. BUILD LANGGRAPH WORKFLOW
-# --------------------------------------------------
+def route_after_verification(state) -> Literal['investigate', 'finish']:
+    return 'investigate' if state['status'] == 'RETRY' and state['searches'] < MAX_SEARCHES else 'finish'
 
 builder = StateGraph(PetitionState)
-
-builder.add_node("investigate", investigate)
-builder.add_node("verify", verify)
-
-builder.add_edge(START, "investigate")
-builder.add_edge("investigate", "verify")
-
-builder.add_conditional_edges(
-    "verify",
-    route_after_verification,
-    {
-        "investigate": "investigate",
-        "finish": END,
-    },
-)
-
+builder.add_node('investigate', investigate)
+builder.add_node('verify', verify)
+builder.add_edge(START, 'investigate')
+builder.add_edge('investigate', 'verify')
+builder.add_conditional_edges('verify', route_after_verification, {'investigate': 'investigate', 'finish': END})
 app = builder.compile()
 
+def run_petition(petition):
+    # Invalid input never reaches the graph through this entry point. Quarantine/API is planned.
+    request = PetitionRequest(petition=petition)
+    return app.invoke({'petition': request.petition, 'searches': 0, 'status': 'STARTED'},
+                      config={'recursion_limit': 10})
 
-# --------------------------------------------------
-# 6. TEST THE WORKFLOW
-# --------------------------------------------------
-
-if __name__ == "__main__":
-    import sys
-    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
-
-    petition = (
-        "My attendance is 72%. I missed classes because of a medical issue. "
-        "What does the handbook say about attendance condonation and "
-        "required medical evidence?"
-    )
-
-    initial_state: PetitionState = {
-        "petition": petition,
-        "evidence": "",
-        "assessment": "",
-        "verification": "",
-        "searches": 0,
-        "status": "STARTED",
-    }
-
-    result = app.invoke(initial_state)
-
-    print("\n" + "=" * 60)
-    print("ACADEMIC PETITION TRIAGE RESULT")
-    print("=" * 60)
-
-    print("\nPETITION:")
-    print(result["petition"])
-
-    print("\nSTATUS:")
-    print(result["status"])
-
-    print("\nSEARCHES PERFORMED:")
-    print(result["searches"])
-
-    print("\nPRELIMINARY ASSESSMENT:")
-    print(result["assessment"])
-
-    print("\nVERIFICATION:")
-    print(result["verification"])
-
-    print("\nRETRIEVED EVIDENCE:")
-    print(result["evidence"])
-
-    print("\n" + "=" * 60)
-
+if __name__ == '__main__':
+    sys.stdout.reconfigure(encoding='utf-8', errors='replace')
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--petition', default='My attendance is 72%. I missed classes because of a medical issue. What are the medical condonation requirements?')
+    result = run_petition(parser.parse_args().petition)
+    print(json.dumps({key: value for key, value in result.items() if key != 'evidence'},
+                     ensure_ascii=False, indent=2))

@@ -1,0 +1,113 @@
+{
+  "petition": "My attendance is 72%. I missed classes due to a medical issue. What are the condonation requirements?",
+  "assessment": {
+    "petition_type": "ATTENDANCE",
+    "findings": [
+      {
+        "finding_id": "finding-1",
+        "evidence_id": "ug-2025-26-verified-8.1-i",
+        "statement": "i) \nStudents are required to attend lectures and other academic activities. Attendance in all \nclasses (lectures, tutorials, laboratories, etc.) must be at least 80% of the total number of \nclasses. Students with less than 80% attendance on a course at the time of the mid-term \nexamination will not be allowed to take the examination. A student will be debarred from \nappearing in the terminal examination of a course if her/his attendance in the course for the \nsemester falls below 80%. A shortage of attendance may be condoned by the Dean only in \nexceptional circumstances.",
+        "supporting_quote": "i) \nStudents are required to attend lectures and other academic activities. Attendance in all \nclasses (lectures, tutorials, laboratories, etc.) must be at least 80% of the total number of \nclasses. Students with less than 80% attendance on a course at the time of the mid-term \nexamination will not be allowed to take the examination. A student will be debarred from \nappearing in the terminal examination of a course if her/his attendance in the course for the \nsemester falls below 80%. A shortage of attendance may be condoned by the Dean only in \nexceptional circumstances.",
+        "citation": {
+          "evidence_id": "ug-2025-26-verified-8.1-i",
+          "source": "UG-HandBook-25-26.pdf",
+          "title": "Student Information Handbook and Scheme of Instructions: Undergraduate Programmes",
+          "version": "2025-26",
+          "chapter": "8",
+          "section": "8.1",
+          "clause_id": "8.1(i)",
+          "locator_kind": "source_label",
+          "locator_label": "Clause 8.1(i)",
+          "pdf_page": 37,
+          "printed_page": "34",
+          "printed_page_verified": true,
+          "citation_metadata_verified": true,
+          "char_start": 67,
+          "char_end": 645,
+          "page_text_sha256": "dc1dcfabb6e64dfb6e5031f9db9e718d4760e7b758a0ac0ab1810c006162aeb0",
+          "exact_quote": "i) \nStudents are required to attend lectures and other academic activities. Attendance in all \nclasses (lectures, tutorials, laboratories, etc.) must be at least 80% of the total number of \nclasses. Students with less than 80% attendance on a course at the time of the mid-term \nexamination will not be allowed to take the examination. A student will be debarred from \nappearing in the terminal examination of a course if her/his attendance in the course for the \nsemester falls below 80%. A shortage of attendance may be condoned by the Dean only in \nexceptional circumstances.",
+          "source_note": ""
+        },
+        "kind": "EXTRACTIVE_RULE"
+      },
+      {
+        "finding_id": "finding-2",
+        "evidence_id": "ug-2025-26-verified-8.1-ii",
+        "statement": "ii) Condonation of attendance: The 80% mandatory attendance may be condoned for medical \nissues, in which case, proper supporting documents (medical certificate issued by the CMO, \nHealth Centre, IISc) need to be furnished at the time of applying for medical leave of absence \non the SAP. In such instances, the attendance requirement will be condoned for the days of \nmedical leave.",
+        "supporting_quote": "ii) Condonation of attendance: The 80% mandatory attendance may be condoned for medical \nissues, in which case, proper supporting documents (medical certificate issued by the CMO, \nHealth Centre, IISc) need to be furnished at the time of applying for medical leave of absence \non the SAP. In such instances, the attendance requirement will be condoned for the days of \nmedical leave.",
+        "citation": {
+          "evidence_id": "ug-2025-26-verified-8.1-ii",
+          "source": "UG-HandBook-25-26.pdf",
+          "title": "Student Information Handbook and Scheme of Instructions: Undergraduate Programmes",
+          "version": "2025-26",
+          "chapter": "8",
+          "section": "8.1",
+          "clause_id": "8.1(ii)",
+          "locator_kind": "source_label",
+          "locator_label": "Clause 8.1(ii)",
+          "pdf_page": 37,
+          "printed_page": "34",
+          "printed_page_verified": true,
+          "citation_metadata_verified": true,
+          "char_start": 647,
+          "char_end": 1030,
+          "page_text_sha256": "dc1dcfabb6e64dfb6e5031f9db9e718d4760e7b758a0ac0ab1810c006162aeb0",
+          "exact_quote": "ii) Condonation of attendance: The 80% mandatory attendance may be condoned for medical \nissues, in which case, proper supporting documents (medical certificate issued by the CMO, \nHealth Centre, IISc) need to be furnished at the time of applying for medical leave of absence \non the SAP. In such instances, the attendance requirement will be condoned for the days of \nmedical leave.",
+          "source_note": ""
+        },
+        "kind": "EXTRACTIVE_RULE"
+      },
+      {
+        "finding_id": "finding-3",
+        "evidence_id": "ug-2025-26-verified-8.1-iii",
+        "statement": "iii) Application for medical leave of absence must be made on the SLCM portal within seven \ndays of recovery from an illness. At the time of applying for medical leave on the SAP portal, \nsupporting documents (medical certificate) issued by the Health Centre must be uploaded \non the portal",
+        "supporting_quote": "iii) Application for medical leave of absence must be made on the SLCM portal within seven \ndays of recovery from an illness. At the time of applying for medical leave on the SAP portal, \nsupporting documents (medical certificate) issued by the Health Centre must be uploaded \non the portal",
+        "citation": {
+          "evidence_id": "ug-2025-26-verified-8.1-iii",
+          "source": "UG-HandBook-25-26.pdf",
+          "title": "Student Information Handbook and Scheme of Instructions: Undergraduate Programmes",
+          "version": "2025-26",
+          "chapter": "8",
+          "section": "8.1",
+          "clause_id": "8.1(iii)",
+          "locator_kind": "source_label",
+          "locator_label": "Clause 8.1(iii)",
+          "pdf_page": 37,
+          "printed_page": "34",
+          "printed_page_verified": true,
+          "citation_metadata_verified": true,
+          "char_start": 1032,
+          "char_end": 1322,
+          "page_text_sha256": "dc1dcfabb6e64dfb6e5031f9db9e718d4760e7b758a0ac0ab1810c006162aeb0",
+          "exact_quote": "iii) Application for medical leave of absence must be made on the SLCM portal within seven \ndays of recovery from an illness. At the time of applying for medical leave on the SAP portal, \nsupporting documents (medical certificate) issued by the Health Centre must be uploaded \non the portal",
+          "source_note": ""
+        },
+        "kind": "EXTRACTIVE_RULE"
+      }
+    ],
+    "missing_provisions": [],
+    "missing_evidence": [
+      "Official course attendance record and examination/semester concerned.",
+      "Medical leave dates, recovery date and SLCM submission timestamp.",
+      "CMO/Health Centre certificate and confirmation of the SAP upload.",
+      "Human officer confirmation of applicable condonation and authority."
+    ],
+    "routing_recommendation": "REFER_TO_COMMITTEE",
+    "reasons": [
+      "Petition statements are unverified; supporting records have not been reviewed.",
+      "This pilot supplies cited rules for human review and does not determine eligibility.",
+      "Every extractive finding matches its canonical quotation and citation metadata."
+    ],
+    "human_review_required": true,
+    "final_decision_made": false
+  },
+  "verification": {
+    "passed": true,
+    "mode": "EXTRACTIVE_SOURCE_MATCH",
+    "checked_findings": 3,
+    "errors": [],
+    "semantic_entailment_checked": false
+  },
+  "searches": 1,
+  "status": "REVIEW_REQUIRED"
+}
