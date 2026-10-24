@@ -1,0 +1,136 @@
+{
+  "passed": true,
+  "provider_completed_two_roles": true,
+  "source_gate": "passed",
+  "status": "REVIEW_REQUIRED",
+  "claims": 3,
+  "metrics": [
+    {
+      "agent": "investigator",
+      "prompt_version": "investigator_v4",
+      "model_calls": 2,
+      "tool_calls": 1,
+      "tools_used": [
+        "search_regulations"
+      ],
+      "success": true,
+      "retries": 0,
+      "latency_seconds": 17.031
+    },
+    {
+      "agent": "verifier",
+      "prompt_version": "verifier_v5",
+      "model_calls": 2,
+      "tool_calls": 1,
+      "tools_used": [
+        "verify_claim_quotes"
+      ],
+      "success": true,
+      "retries": 0,
+      "latency_seconds": 38.719
+    }
+  ],
+  "usage": [
+    {
+      "agent": "investigator",
+      "attempt": 1,
+      "http_status": 200,
+      "success": true,
+      "input_tokens": 1081,
+      "output_tokens": 62,
+      "billed_cost_usd": null,
+      "latency_seconds": 0.640999999999849,
+      "provider_error_code": null,
+      "provider_error_type": null,
+      "provider_error_message": null,
+      "response_shape": {
+        "content_characters": 0,
+        "tools": [
+          {
+            "name": "search_regulations",
+            "argument_keys": [
+              "query"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "agent": "investigator",
+      "attempt": 1,
+      "http_status": 200,
+      "success": true,
+      "input_tokens": 4720,
+      "output_tokens": 156,
+      "billed_cost_usd": null,
+      "latency_seconds": 1.2970000000000255,
+      "provider_error_code": null,
+      "provider_error_type": null,
+      "provider_error_message": null,
+      "response_shape": {
+        "content_characters": 0,
+        "tools": [
+          {
+            "name": "submit_result",
+            "argument_keys": [
+              "claims",
+              "routing_recommendation"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "agent": "verifier",
+      "attempt": 1,
+      "http_status": 200,
+      "success": true,
+      "input_tokens": 2643,
+      "output_tokens": 81,
+      "billed_cost_usd": null,
+      "latency_seconds": 37.85900000000015,
+      "provider_error_code": null,
+      "provider_error_type": null,
+      "provider_error_message": null,
+      "response_shape": {
+        "content_characters": 0,
+        "tools": [
+          {
+            "name": "verify_claim_quotes",
+            "argument_keys": [
+              "evidence_ids"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "agent": "verifier",
+      "attempt": 1,
+      "http_status": 200,
+      "success": true,
+      "input_tokens": 2807,
+      "output_tokens": 85,
+      "billed_cost_usd": null,
+      "latency_seconds": 0.7660000000000764,
+      "provider_error_code": null,
+      "provider_error_type": null,
+      "provider_error_message": null,
+      "response_shape": {
+        "content_characters": 0,
+        "tools": [
+          {
+            "name": "submit_result",
+            "argument_keys": [
+              "needs_research",
+              "verdicts"
+            ]
+          }
+        ]
+      }
+    }
+  ],
+  "failure_type": null,
+  "failure_reason": null,
+  "scope": "One live synthetic acceptance case. Full extractive identity, canonical metadata, complete pilot provision coverage and human-review boundary checked. This is not proof of broad LLM semantic accuracy."
+}

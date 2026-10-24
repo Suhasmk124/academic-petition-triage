@@ -22,5 +22,11 @@
   {"id":"unsupported-parking","petition":"Please refund a fictional parking ticket.","type":"UNSUPPORTED","status":"ESCALATE","clauses":[],"pages":[]},
   {"id":"unsupported-scholarship","petition":"Please increase my scholarship payment this month.","type":"UNSUPPORTED","status":"ESCALATE","clauses":[],"pages":[]},
   {"id":"unsupported-housing","petition":"I want a different hostel room.","type":"UNSUPPORTED","status":"ESCALATE","clauses":[],"pages":[]},
-  {"id":"unsupported-transcript","petition":"Please change the spelling on my transcript.","type":"UNSUPPORTED","status":"ESCALATE","clauses":[],"pages":[]}
+  {"id":"unsupported-transcript","petition":"Please change the spelling on my transcript.","type":"UNSUPPORTED","status":"ESCALATE","clauses":[],"pages":[]},
+  {"id":"unsupported-parking-attendance","petition":"Please refund my parking ticket because my attendance was low.","type":"UNSUPPORTED","status":"ESCALATE","clauses":[],"pages":[]},
+  {"id":"unsupported-employee","petition":"My employee attendance is 72%. What medical condonation is allowed?","type":"UNSUPPORTED","status":"ESCALATE","clauses":[],"pages":[]},
+  {"id":"unsupported-other-university","petition":"I attend another university. What attendance condonation should I receive?","type":"UNSUPPORTED","status":"ESCALATE","clauses":[],"pages":[]},
+  {"id":"unsupported-college","petition":"At a different college I received an X grade. Can you approve a retest?","type":"UNSUPPORTED","status":"ESCALATE","clauses":[],"pages":[]},
+  {"id":"unsupported-school","petition":"My school attendance is 70% after illness. What rule applies?","type":"UNSUPPORTED","status":"ESCALATE","clauses":[],"pages":[]},
+  {"id":"unsupported-tuition","petition":"I need a tuition refund after missing classes and the terminal exam.","type":"UNSUPPORTED","status":"ESCALATE","clauses":[],"pages":[]}
 ]

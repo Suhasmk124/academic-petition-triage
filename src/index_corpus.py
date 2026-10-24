@@ -4,13 +4,15 @@ import hashlib
 import json
 import re
 import sys
+import time
+from runtime_config import embedding_model, chroma_path, collection_name
 from pathlib import Path
 
 SOURCE = 'UG-HandBook-25-26.pdf'
 TITLE = 'Student Information Handbook and Scheme of Instructions: Undergraduate Programmes'
 VERSION = '2025-26'
-COLLECTION = 'iisc_academic_regulations_v2'
-MODEL = 'sentence-transformers/all-MiniLM-L6-v2'
+COLLECTION = collection_name()
+MODEL = embedding_model()
 PRINTED = {25: '22', 26: '23', 37: '34'}
 
 
@@ -117,9 +119,10 @@ def build(pages):
 
 
 def apply(root, rows):
+    started = time.monotonic()
     import chromadb
     from langchain_huggingface import HuggingFaceEmbeddings
-    client = chromadb.PersistentClient(path=str(root / 'data/chroma_db'))
+    client = chromadb.PersistentClient(path=str(chroma_path() if root == Path(__file__).resolve().parents[1] else root / 'data/chroma_db'))
     store = client.get_or_create_collection(COLLECTION, metadata={'embedding_model': MODEL})
     if (store.metadata or {}).get('embedding_model') != MODEL:
         raise ValueError('Embedding model mismatch: use a different collection')
@@ -140,6 +143,14 @@ def apply(root, rows):
     print(f'Upserted: {len(changed)}; unchanged: {len(rows) - len(changed)}; removed: {len(stale)}')
     print(f'Collection: {COLLECTION}; records: {store.count()}')
     print('Legacy collection preserved. Updated retrieval uses the v2 collection.')
+    elapsed = time.monotonic() - started
+    report = dict(collection=COLLECTION, embedding_model=MODEL, records=store.count(),
+                  upserted=len(changed), unchanged=len(rows)-len(changed), removed=len(stale),
+                  elapsed_seconds=elapsed, records_per_second=len(changed)/elapsed if elapsed else 0,
+                  source_version=VERSION, source_hash=sha(''.join(r['metadata']['record_sha256'] for r in rows)))
+    destination = root / 'evaluations/index_report.json'
+    destination.parent.mkdir(exist_ok=True)
+    destination.write_text(json.dumps(report, indent=2), encoding='utf-8')
 
 
 def main():

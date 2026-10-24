@@ -3,6 +3,7 @@ import hashlib
 import json
 import math
 import re
+from runtime_config import embedding_model, chroma_path, collection_name
 from collections import Counter
 from functools import lru_cache
 from pathlib import Path
@@ -10,8 +11,8 @@ from pathlib import Path
 from langchain_core.tools import tool
 
 ROOT = Path(__file__).resolve().parents[1]
-COLLECTION = 'iisc_academic_regulations_v2'
-MODEL = 'sentence-transformers/all-MiniLM-L6-v2'
+COLLECTION = collection_name()
+MODEL = embedding_model()
 STOP = set('a an the is are was were be been of for to from in on at by and or with what which when how can may must should my i me it its this that does do have has as all about required requirement requirements handbook student students please say says'.split())
 
 
@@ -27,7 +28,7 @@ def normal(text):
 def resources():
     import chromadb
     from langchain_huggingface import HuggingFaceEmbeddings
-    client = chromadb.PersistentClient(path=str(ROOT / 'data/chroma_db'))
+    client = chromadb.PersistentClient(path=str(chroma_path()))
     try:
         collection = client.get_collection(COLLECTION)
     except Exception as exc:

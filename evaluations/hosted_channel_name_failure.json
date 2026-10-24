@@ -1,0 +1,64 @@
+{
+  "passed": false,
+  "provider_completed_two_roles": false,
+  "source_gate": "passed",
+  "status": "REVIEW_REQUIRED",
+  "claims": 0,
+  "metrics": [
+    {
+      "agent": "investigator",
+      "prompt_version": "investigator_v4",
+      "model_calls": 2,
+      "tool_calls": 1,
+      "tools_used": [
+        "search_regulations"
+      ],
+      "success": false,
+      "retries": 0,
+      "latency_seconds": 31.235
+    }
+  ],
+  "usage": [
+    {
+      "agent": "investigator",
+      "attempt": 1,
+      "http_status": 200,
+      "success": true,
+      "input_tokens": 1083,
+      "output_tokens": 62,
+      "billed_cost_usd": null,
+      "latency_seconds": 0.7339999999999236,
+      "provider_error_code": null,
+      "provider_error_type": null,
+      "provider_error_message": null,
+      "response_shape": {
+        "content_characters": 0,
+        "tools": [
+          {
+            "name": "search_regulations",
+            "argument_keys": [
+              "query"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "agent": "investigator",
+      "attempt": 1,
+      "http_status": 400,
+      "success": false,
+      "input_tokens": null,
+      "output_tokens": null,
+      "billed_cost_usd": null,
+      "latency_seconds": 1.0470000000000255,
+      "provider_error_code": "tool_use_failed",
+      "provider_error_type": "invalid_request_error",
+      "provider_error_message": "Tool call validation failed: tool call validation failed: attempted to call tool 'JSON<|channel|>commentary' which was not in request.tools",
+      "response_shape": null
+    }
+  ],
+  "failure_type": "ModelUnavailable",
+  "failure_reason": "Model request failed with HTTP 400.",
+  "scope": "One live synthetic acceptance case. Full extractive identity, canonical metadata, complete pilot provision coverage and human-review boundary checked. This is not proof of broad LLM semantic accuracy."
+}

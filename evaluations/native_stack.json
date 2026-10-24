@@ -1,0 +1,35 @@
+{
+  "passed": true,
+  "url": "http://127.0.0.1:53975",
+  "checks": [
+    {
+      "position": "REFER_TO_COMMITTEE",
+      "run_id": "963e1bc0-e37f-4c2b-8b60-e48379adca9d",
+      "trace_id": "1a31537e8d44a87a3092184b8695724b",
+      "cache_hit": false
+    },
+    {
+      "position": "GRANT_UNDER_PROVISION",
+      "run_id": "e01223e7-2fb1-403e-9778-bf0ea75f388d",
+      "trace_id": "0cb239ca70d5cacf382fd22e3022fd14",
+      "cache_hit": true
+    },
+    {
+      "position": "REJECT_UNDER_PROVISION",
+      "run_id": "1a48509f-71a5-4b76-ad93-a72c56605a13",
+      "trace_id": "c85f3e77f5d90c2f3969525e313ae94a",
+      "cache_hit": true
+    }
+  ],
+  "invalid_quarantined": true,
+  "injection_blocked": true,
+  "feedback_saved": true,
+  "quality_sampled": true,
+  "pdf_verified": true,
+  "observability": {},
+  "scope": "Deployed functional acceptance; performance is measured separately by benchmark.py.",
+  "deployment": "Native pre-container verification",
+  "separate_stub_service": true,
+  "workers": 3,
+  "hosted_requests": 0
+}

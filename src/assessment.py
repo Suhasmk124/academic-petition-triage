@@ -43,6 +43,14 @@ class Assessment(Contract):
 def classify(petition):
     """Narrow keyword classifier for this pilot; other types escalate."""
     text = petition.lower()
+    # Mixed or explicitly external requests require a human scope check. Do not
+    # let one keyword turn a refund, employment or another-institution case into
+    # a supported handbook assessment.
+    outside = ('parking ticket','parking refund','scholarship payment','hostel room','tuition refund',
+               'transcript','visa application','employee attendance','office attendance','work attendance',
+               'school attendance','another university','different college','another college','different university')
+    if any(phrase in text for phrase in outside):
+        return 'UNSUPPORTED'
     if 'attendance' in text or 'missed classes' in text:
         return 'ATTENDANCE'
     if any(word in text for word in ('x grade', "'x' grade", '‘x’ grade', 'retest')):
@@ -90,7 +98,8 @@ def build_assessment(petition, evidence):
     return Assessment(petition_type=kind, findings=findings,
                       missing_provisions=[x for x in expected if x not in citations],
                       missing_evidence=MISSING_EVIDENCE[kind],
-                      reasons=['Petition statements are unverified; supporting records have not been reviewed.',
+                      reasons=['Confirm that the IISc Undergraduate Handbook 2025-26 applies to this case.',
+                               'Petition statements are unverified; supporting records have not been reviewed.',
                                'This pilot supplies cited rules for human review and does not determine eligibility.'])
 
 def verify_findings(findings, canonical_records, check_source):

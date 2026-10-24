@@ -67,7 +67,7 @@ class AgentTests(unittest.TestCase):
 
     def run_model(self, model):
         with patch('workflow.run_petition', return_value={'status': 'ESCALATE', 'assessment': {'findings': []}}):
-            return run_agents('My attendance is 72% due to illness.', model, fixture_tools())
+            return run_agents('My attendance is 72% due to illness.', model, fixture_tools(),variant='baseline')
 
     def test_two_roles_choose_tools_and_handoff(self):
         model = ScriptedModel()
@@ -81,6 +81,35 @@ class AgentTests(unittest.TestCase):
         self.assertEqual([m['role'] for m in model.calls[2][1]], ['system', 'user'])
         self.assertFalse(result['provider_response_used'])
         self.assertFalse(result['final_decision_made'])
+
+    def test_structured_json_submission_channel(self):
+        draft=copy.deepcopy(DRAFT)
+        for claim in draft['claims']:claim.pop('supporting_quote',None)
+        model=ScriptedModel(investigator=[search_call(),call('JSON',draft)],verifier=[verify_call(),call('JSON',REVIEW)])
+        result=self.run_model(model)
+        self.assertEqual(result['mode'],'HOSTED_AGENTS')
+        self.assertEqual(result['status'],'REVIEW_REQUIRED')
+        self.assertEqual([metric['tools_used'] for metric in result['metrics']],[['search_regulations'],['verify_claim_quotes']])
+
+    def test_json_submission_cannot_bypass_source_tools(self):
+        draft=copy.deepcopy(DRAFT)
+        for claim in draft['claims']:claim.pop('supporting_quote',None)
+        result=self.run_model(ScriptedModel(investigator=[call('JSON',draft)]))
+        self.assertEqual(result['mode'],'DETERMINISTIC_FALLBACK')
+
+    def test_malformed_final_can_be_corrected_within_existing_budget(self):
+        for malformed in (final({}),call('JSON',{})):
+            model=ScriptedModel(investigator=[search_call(),malformed,final(DRAFT)])
+            result=self.run_model(model)
+            self.assertEqual(result['mode'],'HOSTED_AGENTS')
+            self.assertEqual(result['metrics'][0]['model_calls'],3)
+            self.assertIn('schema',json.dumps(model.calls[2][1]).lower())
+
+    def test_malformed_final_cannot_expand_six_turn_limit(self):
+        model=ScriptedModel(investigator=[search_call()]+[final({})]*8)
+        result=self.run_model(model)
+        self.assertEqual(result['mode'],'DETERMINISTIC_FALLBACK')
+        self.assertEqual(result['metrics'][0]['model_calls'],6)
 
     def test_research_recovers_once(self):
         failed = copy.deepcopy(REVIEW)

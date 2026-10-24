@@ -1,0 +1,77 @@
+{
+  "deployment": "Docker Compose",
+  "slo": {
+    "declared_before_measurement": true,
+    "workload": "10 concurrent synthetic attendance clients; real local retrieval, simulated model with 0.15 seconds per model step; warm model; no hosted calls",
+    "submission_p95_ms": 750,
+    "workflow_p95_ms": 10000,
+    "maximum_failure_ratio": 0.01,
+    "duration_seconds": 60,
+    "scale_comparison": [
+      1,
+      3
+    ],
+    "cache_comparison": [
+      "disabled",
+      "enabled"
+    ],
+    "scope": "Development acceptance targets for this stated workload, not a universal production guarantee. A failed target must remain visible."
+  },
+  "results": [
+    {
+      "workers": 1,
+      "cache_ttl": 0,
+      "duration_seconds": 60,
+      "concurrency": 10,
+      "workflow_rps": 1.0897744800997493,
+      "workflow_p50_ms": 9000.0,
+      "workflow_p95_ms": 9200.0,
+      "submit_p95_ms": 110.0,
+      "failure_ratio": 0.0,
+      "requests": 73,
+      "cache_hits": 0,
+      "cache_misses": 73,
+      "avoided_simulated_model_calls": 0,
+      "estimated_billed_cost_usd": 0,
+      "load_exit_code": 0,
+      "slo_passed": true
+    },
+    {
+      "workers": 3,
+      "cache_ttl": 0,
+      "duration_seconds": 60,
+      "concurrency": 10,
+      "workflow_rps": 2.079369375954277,
+      "workflow_p50_ms": 4200.0,
+      "workflow_p95_ms": 6300.0,
+      "submit_p95_ms": 170.0,
+      "failure_ratio": 0.0,
+      "requests": 131,
+      "cache_hits": 0,
+      "cache_misses": 131,
+      "avoided_simulated_model_calls": 0,
+      "estimated_billed_cost_usd": 0,
+      "load_exit_code": 0,
+      "slo_passed": true
+    },
+    {
+      "workers": 3,
+      "cache_ttl": 300,
+      "duration_seconds": 60,
+      "concurrency": 10,
+      "workflow_rps": 15.914741441655075,
+      "workflow_p50_ms": 440.0,
+      "workflow_p95_ms": 850.0,
+      "submit_p95_ms": 560.0,
+      "failure_ratio": 0.0,
+      "requests": 940,
+      "cache_hits": 940,
+      "cache_misses": 0,
+      "avoided_simulated_model_calls": 3760,
+      "estimated_billed_cost_usd": 0,
+      "load_exit_code": 0,
+      "slo_passed": true
+    }
+  ],
+  "hosted_requests": 0
+}

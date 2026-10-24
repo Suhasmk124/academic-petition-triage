@@ -1,0 +1,125 @@
+name: academic-petition-triage
+x-app: &app
+  build: .
+  image: academic-petition-triage:local
+  init: true
+  environment: &environment
+    TRIAGE_MODE: stub
+    TRIAGE_DB_PATH: /app/data/runtime/service.sqlite3
+    CHROMA_PATH: /app/data/chroma_db
+    HF_HOME: /models
+    HF_HUB_OFFLINE: "1"
+    TRANSFORMERS_OFFLINE: "1"
+    TRIAGE_API_KEY_FILE: /run/secrets/triage_key
+    TRIAGE_CACHE_TTL: ${TRIAGE_CACHE_TTL:-300}
+    TRIAGE_RATE_LIMIT: ${TRIAGE_RATE_LIMIT:-120}
+    TRIAGE_JOB_TIMEOUT: 120
+    TRIAGE_STUB_DELAY_SECONDS: 0.15
+    TRIAGE_PROMPT_VARIANT: strict
+    STUB_SERVICE_URL: http://stub:8001
+    REDIS_URL: redis://redis:6379/0
+    OTEL_EXPORTER_OTLP_ENDPOINT: http://jaeger:4318
+    TOKENIZERS_PARALLELISM: "false"
+    OMP_NUM_THREADS: 1
+  volumes:
+    - runtime:/app/data/runtime
+    - index:/app/data/chroma_db
+    - models:/models
+    - reports:/app/evaluations
+  secrets: [triage_key]
+services:
+  indexer:
+    <<: *app
+    command: [python, scripts/initialize.py]
+    environment:
+      <<: *environment
+      HF_HUB_OFFLINE: "0"
+      TRANSFORMERS_OFFLINE: "0"
+  redis:
+    image: redis:7-alpine@sha256:57e4255cc971b1c8d6f8a6ca283ac01bc3ecdd914273ef6bfaede87aaecd6541
+    command: [redis-server, --appendonly, "yes"]
+    volumes: ["redis-data:/data"]
+    healthcheck:
+      test: [CMD, redis-cli, ping]
+      interval: 5s
+      retries: 12
+  stub:
+    <<: *app
+    command: [python, -m, uvicorn, stub_service:app, --app-dir, src, --host, 0.0.0.0, --port, "8001"]
+    environment:
+      <<: *environment
+      OTEL_SERVICE_NAME: petition-stub
+      STUB_CONCURRENCY: 8
+    depends_on:
+      indexer: {condition: service_completed_successfully}
+    healthcheck:
+      test: [CMD, curl, -fsS, http://localhost:8001/health]
+      interval: 5s
+      start_period: 120s
+      retries: 24
+  api:
+    <<: *app
+    ports: ["127.0.0.1:${TRIAGE_PORT:-8000}:8000"]
+    environment:
+      <<: *environment
+      OTEL_SERVICE_NAME: petition-api
+    depends_on:
+      indexer: {condition: service_completed_successfully}
+      redis: {condition: service_healthy}
+    healthcheck:
+      test: [CMD, curl, -fsS, http://localhost:8000/health]
+      interval: 5s
+      retries: 12
+  worker:
+    <<: *app
+    command: [python, src/worker.py]
+    environment:
+      <<: *environment
+      OTEL_SERVICE_NAME: petition-worker
+    depends_on:
+      api: {condition: service_healthy}
+      stub: {condition: service_healthy}
+    healthcheck:
+      test: [CMD, python, scripts/worker_health.py]
+      interval: 5s
+      retries: 12
+  jaeger:
+    image: cr.jaegertracing.io/jaegertracing/jaeger:2.22.0@sha256:836b967b5abcf1f7758066aa6b348619267a2f1459f72d472840570f9bd88a17
+    ports: ["127.0.0.1:16686:16686"]
+  prometheus:
+    image: prom/prometheus@sha256:fa3302279710be2f21a8301ec17a8b4f2301fd829bd113839b3b6b02b6f191a2
+    volumes:
+      - ./deploy/prometheus.yaml:/etc/prometheus/prometheus.yml:ro
+      - prometheus-data:/prometheus
+    secrets: [triage_key]
+    ports: ["127.0.0.1:9090:9090"]
+    depends_on:
+      api: {condition: service_healthy}
+  grafana:
+    image: grafana/grafana@sha256:dbbc38ea21103cefb50396340cd88afec779c7e070b0a7bf5a75b4ce46651d3f
+    ports: ["127.0.0.1:3000:3000"]
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD__FILE: /run/secrets/grafana_key
+      GF_USERS_ALLOW_SIGN_UP: "false"
+    secrets: [grafana_key]
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./deploy/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./deploy/grafana/dashboards:/var/lib/grafana/dashboards:ro
+  load:
+    <<: *app
+    profiles: [load]
+    command: [python, -m, locust, -f, load/locustfile.py, --host, http://api:8000, --headless, -u, "10", -r, "2", -t, 60s, --csv, /app/evaluations/locust]
+    depends_on:
+      worker: {condition: service_healthy}
+volumes:
+  runtime:
+  index:
+  models:
+  reports:
+  redis-data:
+  prometheus-data:
+  grafana-data:
+secrets:
+  triage_key: {file: .secrets/triage_key}
+  grafana_key: {file: .secrets/grafana_key}

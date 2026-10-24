@@ -8,6 +8,7 @@
   <script defer src="/assets/app.js"></script>
 </head>
 <body>
+<dialog id="login-dialog"><form id="login-form"><h2>Sign in to this workspace</h2><p class="field-hint">Use the access key generated for your local deployment. The key stays out of browser storage.</p><label for="access-key">Workspace access key</label><input id="access-key" type="password" required autocomplete="off"><button class="primary" type="submit">Sign in</button><p id="login-error" role="alert"></p></form></dialog>
 <aside class="sidebar">
   <a class="brand" href="/" aria-label="Petition desk home"><span class="brand-mark">P<span>·</span></span><span>Petition desk<small>ACADEMIC REVIEW</small></span></a>
   <div class="workspace-label">WORKSPACE</div>
@@ -29,6 +30,7 @@
           <textarea id="petition" name="petition" maxlength="4000" required aria-describedby="petition-hint count" placeholder="For example: My attendance is 72% following a medical absence. What provisions and supporting records should the officer review?"></textarea>
           <div class="text-meta"><span>Fictional scenarios only</span><span id="count">0 / 4,000</span></div>
           <fieldset><legend>Or explore a sample</legend><div class="samples"><button type="button" data-sample="attendance">Attendance shortage <span>↗</span></button><button type="button" data-sample="medical">Missed examination <span>↗</span></button><button type="button" data-sample="grade">X grade &amp; retest <span>↗</span></button></div></fieldset>
+          <details class="facts"><summary>Optional fictional facts for a conditional position</summary><p class="field-hint">These facts remain unverified. An officer must confirm records and exceptions before any decision.</p><label for="attendance-percent">Attendance percentage</label><input id="attendance-percent" type="number" min="0" max="100" step="0.1" placeholder="Unknown"><label for="medical-absence">Medical absence?</label><select id="medical-absence"><option value="">Unknown</option><option value="true">Yes</option><option value="false">No</option></select><label for="exception-requested">Exceptional circumstances requested?</label><select id="exception-requested"><option value="">Unknown</option><option value="true">Yes</option><option value="false">No</option></select><label for="summer-term">Summer-term registration?</label><select id="summer-term"><option value="">Unknown</option><option value="true">Yes</option><option value="false">No</option></select></details>
           <label class="consent"><input id="synthetic" type="checkbox" required><span>This is a synthetic petition and contains no real student records.</span></label>
           <button id="submit" class="primary" type="submit">Find applicable provisions <span aria-hidden="true">→</span></button>
           <p class="form-foot">IISc Undergraduate Handbook · 2025–26</p>

@@ -1,0 +1,201 @@
+{
+  "cases": 22,
+  "results": [
+    {
+      "id": "5.6(introduction)-canonical",
+      "clause": "5.6(introduction)",
+      "claim": "5.6 TERMINAL EXAMINATION Terminal examinations are held during the last fortnight of each semester and during the last week of the Summer Term. The Timetable will be notified in advance. The graded answer scripts of the terminal examination will be made available to the students on a specified date within one week from the date of the terminal examination. Requests for changes in the grading of the terminal examination papers can be made only when the graded papers are shown to the students.",
+      "meaning_supported_label": true,
+      "quote_presence_only_accepts": true,
+      "extractive_gate_accepts": true
+    },
+    {
+      "id": "5.6(i)-canonical",
+      "clause": "5.6(i)",
+      "claim": "i) Attendance of the terminal examination is compulsory. If a student does not attend the examination, she/he shall be considered as having obtained zero marks in it and will get an F grade. Absence on medical grounds, certified by the Chief Medical Officer of the Institute, may be condoned, and the student may be permitted to take substitute examination(s) within a prescribed period (Refer Para. 5.5 (C)). In such a case, students need to apply for medical leave on SLCM within seven days of recovery from an illness. At the time of applying for medical leave on the SAP portal, supporting documents (medical certificate) issued by the Health Centre must be uploaded on the portal.",
+      "meaning_supported_label": true,
+      "quote_presence_only_accepts": true,
+      "extractive_gate_accepts": true
+    },
+    {
+      "id": "5.7(C)(1)-canonical",
+      "clause": "5.7(C)(1)",
+      "claim": "\uf0b7 \u2018X\u2019 grades may be awarded to students who are unable to attend the final examination due to medical reasons. Students must submit a valid medical certificate attested by the Institute\u2019s Chief Medical Officer (CMO). In the absence of such certification, an \u2018F\u2019 grade shall be awarded.",
+      "meaning_supported_label": true,
+      "quote_presence_only_accepts": true,
+      "extractive_gate_accepts": true
+    },
+    {
+      "id": "5.7(C)(2)-canonical",
+      "clause": "5.7(C)(2)",
+      "claim": "\uf0b7 To award an \u2018X\u2019 grade, the course instructor must upload the medical certificate or leave memo issued by the CMO or the Academics Section at the time of grading the course in SAP. The course instructor must also provide written justification based on the submitted document. The \u2018X\u2019 grade must be cleared within a specified period after completion of the final assessment.",
+      "meaning_supported_label": true,
+      "quote_presence_only_accepts": true,
+      "extractive_gate_accepts": true
+    },
+    {
+      "id": "5.7(C)(3)-canonical",
+      "clause": "5.7(C)(3)",
+      "claim": "\uf0b7 Under normal circumstances, the course instructor should conduct the retest and update the grades in SAP within 15 days from the declaration of results. However, in unavoidable circumstances where the examination cannot be conducted within this period, the final assessment shall be completed no later than June 30 of the same academic year for courses offered in both the August and January terms.",
+      "meaning_supported_label": true,
+      "quote_presence_only_accepts": true,
+      "extractive_gate_accepts": true
+    },
+    {
+      "id": "5.7(C)(4)-canonical",
+      "clause": "5.7(C)(4)",
+      "claim": "\uf0b7 \u2018X\u2019 grades shall not be awarded for courses registered during the summer term, as these are intended as make-up courses for UG students.",
+      "meaning_supported_label": true,
+      "quote_presence_only_accepts": true,
+      "extractive_gate_accepts": true
+    },
+    {
+      "id": "5.7(C)(5)-canonical",
+      "clause": "5.7(C)(5)",
+      "claim": "\uf0b7 If the examination is conducted within the permitted timeframe, the \u2018X\u2019 grade will be replaced with the appropriate grade earned. If not, the \u2018X\u2019 grade shall lapse and be converted to an \u2018F\u2019 grade, unless additional certified medical justification is provided.",
+      "meaning_supported_label": true,
+      "quote_presence_only_accepts": true,
+      "extractive_gate_accepts": true
+    },
+    {
+      "id": "8.1(i)-canonical",
+      "clause": "8.1(i)",
+      "claim": "i) Students are required to attend lectures and other academic activities. Attendance in all classes (lectures, tutorials, laboratories, etc.) must be at least 80% of the total number of classes. Students with less than 80% attendance on a course at the time of the mid-term examination will not be allowed to take the examination. A student will be debarred from appearing in the terminal examination of a course if her/his attendance in the course for the semester falls below 80%. A shortage of attendance may be condoned by the Dean only in exceptional circumstances.",
+      "meaning_supported_label": true,
+      "quote_presence_only_accepts": true,
+      "extractive_gate_accepts": true
+    },
+    {
+      "id": "8.1(ii)-canonical",
+      "clause": "8.1(ii)",
+      "claim": "ii) Condonation of attendance: The 80% mandatory attendance may be condoned for medical issues, in which case, proper supporting documents (medical certificate issued by the CMO, Health Centre, IISc) need to be furnished at the time of applying for medical leave of absence on the SAP. In such instances, the attendance requirement will be condoned for the days of medical leave.",
+      "meaning_supported_label": true,
+      "quote_presence_only_accepts": true,
+      "extractive_gate_accepts": true
+    },
+    {
+      "id": "8.1(iii)-canonical",
+      "clause": "8.1(iii)",
+      "claim": "iii) Application for medical leave of absence must be made on the SLCM portal within seven days of recovery from an illness. At the time of applying for medical leave on the SAP portal, supporting documents (medical certificate) issued by the Health Centre must be uploaded on the portal",
+      "meaning_supported_label": true,
+      "quote_presence_only_accepts": true,
+      "extractive_gate_accepts": true
+    },
+    {
+      "id": "5.7(B)(attendance_exclusion)-canonical",
+      "clause": "5.7(B)(attendance_exclusion)",
+      "claim": "\uf0b7 If a student secures an F grade due to shortage of attendance they are not eligible to register for a make-up exam in the summer term. \uf020",
+      "meaning_supported_label": true,
+      "quote_presence_only_accepts": true,
+      "extractive_gate_accepts": true
+    },
+    {
+      "id": "8.2(i)-canonical",
+      "clause": "8.2(i)",
+      "claim": "i) Leave on personal grounds: 30 days a year. Leave of absence on personal grounds will not be condoned for attendance purposes.",
+      "meaning_supported_label": true,
+      "quote_presence_only_accepts": true,
+      "extractive_gate_accepts": true
+    },
+    {
+      "id": "8.2(v)-canonical",
+      "clause": "8.2(v)",
+      "claim": "v) Absence for a period not exceeding two weeks in a semester due to unavoidable reasons for which prior application could not be made may be condoned by the Dean of Undergraduate Studies provided she/he is satisfied with the explanation.",
+      "meaning_supported_label": true,
+      "quote_presence_only_accepts": true,
+      "extractive_gate_accepts": true
+    },
+    {
+      "id": "mutation-1",
+      "clause": "8.1(i)",
+      "claim": "i) Students are required to attend lectures and other academic activities. Attendance in all classes (lectures, tutorials, laboratories, etc.) must be at least 70% of the total number of classes. Students with less than 80% attendance on a course at the time of the mid-term examination will not be allowed to take the examination. A student will be debarred from appearing in the terminal examination of a course if her/his attendance in the course for the semester falls below 80%. A shortage of attendance may be condoned by the Dean only in exceptional circumstances.",
+      "meaning_supported_label": false,
+      "quote_presence_only_accepts": true,
+      "extractive_gate_accepts": false
+    },
+    {
+      "id": "mutation-2",
+      "clause": "8.1(ii)",
+      "claim": "ii) Condonation of attendance: The 80% mandatory attendance may be condoned for medical issues, in which case, proper supporting documents (medical certificate issued by the any doctor, Health Centre, IISc) need to be furnished at the time of applying for medical leave of absence on the SAP. In such instances, the attendance requirement will be condoned for the days of medical leave.",
+      "meaning_supported_label": false,
+      "quote_presence_only_accepts": true,
+      "extractive_gate_accepts": false
+    },
+    {
+      "id": "mutation-3",
+      "clause": "8.1(iii)",
+      "claim": "iii) Application for medical leave of absence must be made on the SAP portal within seven days of recovery from an illness. At the time of applying for medical leave on the SAP portal, supporting documents (medical certificate) issued by the Health Centre must be uploaded on the portal",
+      "meaning_supported_label": false,
+      "quote_presence_only_accepts": true,
+      "extractive_gate_accepts": false
+    },
+    {
+      "id": "mutation-4",
+      "clause": "8.1(iii)",
+      "claim": "iii) Application for medical leave of absence must be made on the SLCM portal within thirty days of recovery from an illness. At the time of applying for medical leave on the SAP portal, supporting documents (medical certificate) issued by the Health Centre must be uploaded on the portal",
+      "meaning_supported_label": false,
+      "quote_presence_only_accepts": true,
+      "extractive_gate_accepts": false
+    },
+    {
+      "id": "mutation-5",
+      "clause": "5.7(C)(3)",
+      "claim": "\uf0b7 Under normal circumstances, the course instructor should conduct the retest and update the grades in SAP within 15 days from the declaration of results. However, in unavoidable circumstances where the examination cannot be conducted within this period, the final assessment shall be completed no later than July 30 of the same academic year for courses offered in both the August and January terms.",
+      "meaning_supported_label": false,
+      "quote_presence_only_accepts": true,
+      "extractive_gate_accepts": false
+    },
+    {
+      "id": "mutation-6",
+      "clause": "5.7(C)(4)",
+      "claim": "\uf0b7 \u2018X\u2019 grades shall be awarded for courses registered during the summer term, as these are intended as make-up courses for UG students.",
+      "meaning_supported_label": false,
+      "quote_presence_only_accepts": true,
+      "extractive_gate_accepts": false
+    },
+    {
+      "id": "8.1(i)-supported-paraphrase",
+      "clause": "8.1(i)",
+      "claim": "Attendance in classes must be at least 80%.",
+      "meaning_supported_label": true,
+      "quote_presence_only_accepts": true,
+      "extractive_gate_accepts": false
+    },
+    {
+      "id": "8.1(iii)-supported-paraphrase",
+      "clause": "8.1(iii)",
+      "claim": "Medical leave applications on SLCM are due within seven days of recovery.",
+      "meaning_supported_label": true,
+      "quote_presence_only_accepts": true,
+      "extractive_gate_accepts": false
+    },
+    {
+      "id": "5.7(C)(4)-supported-paraphrase",
+      "clause": "5.7(C)(4)",
+      "claim": "X grades shall not be awarded for summer-term courses.",
+      "meaning_supported_label": true,
+      "quote_presence_only_accepts": true,
+      "extractive_gate_accepts": false
+    }
+  ],
+  "summary": {
+    "quote_presence_only_accepts": {
+      "true_positive": 16,
+      "false_positive": 6,
+      "false_negative": 0,
+      "precision": 0.7272727272727273,
+      "recall": 1.0,
+      "unsupported_acceptance_rate": 1.0
+    },
+    "extractive_gate_accepts": {
+      "true_positive": 13,
+      "false_positive": 0,
+      "false_negative": 3,
+      "precision": 1.0,
+      "recall": 0.8125,
+      "unsupported_acceptance_rate": 0.0
+    }
+  },
+  "hosted_requests": 0,
+  "scope": "Hand-authored source-meaning labels and exact extractive acceptance. A component before/after comparison, not a general semantic/NLI benchmark. Valid paraphrases are deliberately rejected; the recall cost is reported."
+}

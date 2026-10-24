@@ -624,3 +624,12 @@ footer {
 .feedback textarea { min-height: 85px; }
 .feedback .consent { margin: 14px 0; }
 .source-link { display: inline-block; margin: 5px 0; font-size: 11px; text-decoration: underline; color: var(--green); }
+dialog { border: 1px solid var(--line); border-radius: 12px; max-width: 420px; color: var(--ink); }
+dialog::backdrop { background: #12382d88; }
+dialog form { padding: 15px; }
+dialog input, .facts input, .facts select { display: block; width: 100%; padding: 10px; margin: 8px 0 14px; border: 1px solid var(--line); background: #fcfdf9; border-radius: 5px; color: var(--ink); }
+.facts { margin: 20px 0; font-size: 11px; }
+.facts summary, .transparency summary { cursor: pointer; color: var(--green); }
+.facts label { display: block; margin-top: 10px; }
+.transparency { border-top: 1px solid var(--line); margin-top: 20px; padding-top: 16px; font-size: 11px; overflow-wrap: anywhere; }
+.transparency p { line-height: 1.8; color: var(--muted); }

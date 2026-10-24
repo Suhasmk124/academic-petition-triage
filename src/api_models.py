@@ -4,11 +4,13 @@ from uuid import UUID
 from pydantic import Field, field_validator
 from assessment import Contract, PetitionRequest
 from service_config import ExecutionMode
+from position import PetitionFacts
 
 JobStatus = Literal['QUEUED', 'RUNNING', 'SUCCEEDED', 'FAILED']
 
 class Submission(PetitionRequest):
     synthetic: Literal[True]
+    facts: PetitionFacts | None = None
 
     @field_validator('synthetic', mode='before')
     @classmethod

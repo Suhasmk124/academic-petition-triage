@@ -3,6 +3,8 @@ import argparse
 import json
 import sys
 import unittest
+import os
+from unittest.mock import patch
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -12,14 +14,17 @@ def main():
     sys.stdout.reconfigure(encoding='utf-8', errors='replace')
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--service', action='store_true', help='Also run local HTTP + separate-worker integration smoke')
-    parser.add_argument('--evaluation', action='store_true', help='Also run the fixed 24-scenario local evaluation')
+    parser.add_argument('--evaluation', action='store_true', help='Also run the fixed synthetic-scenario local evaluation')
     args = parser.parse_args()
     suite = unittest.defaultTestLoader.discover(str(ROOT / 'tests'), pattern='test_*.py')
-    unit = unittest.TextTestRunner(verbosity=1).run(suite)
+    with patch.dict(os.environ,{'TRIAGE_API_KEY':'','TRIAGE_API_KEY_FILE':'','REDIS_URL':'','STUB_SERVICE_URL':'','TRIAGE_RATE_LIMIT':'0','TRIAGE_CACHE_TTL':'0','OTEL_EXPORTER_OTLP_ENDPOINT':''}):
+        unit = unittest.TextTestRunner(verbosity=1).run(suite)
     if not unit.wasSuccessful():
         raise SystemExit(1)
     from check_safety import main as safety_checks
     safety_report = safety_checks()
+    from semantic_challenges import main as semantic_checks
+    semantic_report=semantic_checks()
     from test_retrieval import main as retrieval_checks
     retrieval_checks()
     from workflow import run_petition
@@ -54,6 +59,7 @@ def main():
                   semantic_entailment_verified=False,
                   fixed_scenarios=evaluation_report['scenarios'] if evaluation_report else None,
                   safety_rule_cases=safety_report['cases'],
+                  semantic_challenge_cases=semantic_report['cases'],
                   fixed_workflow_runs=evaluation_report['workflow_runs'] if evaluation_report else None,
                   scope='Local regression and extractive evaluation only; hosted semantic quality and prompt A/B remain unvalidated.')
     (ROOT / 'evaluations/project_checks.json').write_text(json.dumps(report, indent=2), encoding='utf-8')

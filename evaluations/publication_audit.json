@@ -1,0 +1,6 @@
+{
+  "passed": true,
+  "history_blobs_scanned": 184,
+  "findings": [],
+  "scope": "Exact configured-secret and common credential-pattern scan of reachable history plus tracked working files. Does not replace a general data/privacy review."
+}

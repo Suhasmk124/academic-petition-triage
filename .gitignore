@@ -28,3 +28,7 @@ work/
 
 # Local queue, results and invalid-request quarantine
 data/runtime/
+.secrets/
+*.msi
+*.msix
+*.msixbundle

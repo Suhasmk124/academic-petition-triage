@@ -60,8 +60,13 @@ class HostedChat:
     def complete(self, role, messages, tools):
         if self.clock() < self.open_until:
             raise ModelUnavailable('Model circuit is temporarily open.')
+        first_action = not any(message.get('role')=='tool' for message in messages)
+        choice = 'required' if first_action and tools and os.getenv('LLM_FORCE_TOOL_START','false')=='true' else 'auto'
         body = dict(model=self.settings.model, messages=messages,
-                    tools=tools, tool_choice='auto', max_completion_tokens=self.settings.max_output_tokens)
+                    tools=tools, tool_choice=choice, max_completion_tokens=self.settings.max_output_tokens)
+        if os.getenv('LLM_REASONING_EFFORT'):
+            body['reasoning_effort']=os.environ['LLM_REASONING_EFFORT']
+        body['parallel_tool_calls']=False
         started = self.clock()
         estimated_tokens = math.ceil(len(json.dumps(body)) / 4) + self.settings.max_output_tokens
         pacing_seconds = 0.0

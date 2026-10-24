@@ -1,0 +1,12 @@
+{
+  "collection": "iisc_academic_regulations_v2",
+  "embedding_model": "sentence-transformers/all-MiniLM-L6-v2",
+  "records": 509,
+  "upserted": 0,
+  "unchanged": 509,
+  "removed": 0,
+  "elapsed_seconds": 0.9335258470000554,
+  "records_per_second": 0.0,
+  "source_version": "2025-26",
+  "source_hash": "9d01dc22e73777b752905f760b8f5868291d436334e7c03711d4d075d7686718"
+}

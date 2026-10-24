@@ -6,20 +6,41 @@ const samples = {
   grade: 'I received an X grade after missing the final examination for medical reasons. What are the retest deadlines and summer term restrictions?'
 };
 let activeRun = null, generation = 0;
+let loginPromise = null, finishLogin = null, failLogin = null;
+function ensureLogin() {
+  if (!loginPromise) {
+    loginPromise = new Promise((resolve,reject)=>{ finishLogin=resolve; failLogin=reject; });
+    $('login-dialog').showModal(); $('access-key').focus();
+  }
+  return loginPromise;
+}
+$('login-dialog').addEventListener('cancel',()=>{ failLogin?.(new Error('Sign-in was cancelled.')); loginPromise=null; });
+$('login-form').addEventListener('submit',async event=>{
+  event.preventDefault(); $('login-error').textContent='';
+  try {
+    await request('/auth/session',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({api_key:$('access-key').value})});
+    $('access-key').value=''; $('login-dialog').close(); finishLogin?.(); loginPromise=null;
+  } catch (_) { $('login-error').textContent='The workspace key was not accepted. Please check it and try again.'; }
+});
 function element(tag, content, className) {
   const node = document.createElement(tag);
   if (content !== undefined) node.textContent = content;
   if (className) node.className = className;
   return node;
 }
-async function request(path, options = {}) {
+async function request(path, options = {}, reauthenticate = true) {
   const response = await fetch(path, {...options, signal: AbortSignal.timeout(15000)});
+  if (response.status===401 && path!=='/auth/session' && reauthenticate) {
+    await ensureLogin(); return request(path,options,false);
+  }
   const data = await response.json();
   if (!response.ok) {
     const message = data.error === 'QUEUE_FULL' ? 'The queue is full. Please try again shortly.'
       : data.error === 'INVALID_REQUEST' ? `Please check your petition. No workflow was started. Reference: ${data.quarantine_id}`
       : data.error === 'CONTENT_REQUIRES_REVIEW' ? `Please rephrase without system instructions or abusive language. Reference: ${data.quarantine_id}`
       : response.status === 409 ? 'Please wait until the run finishes before leaving feedback.'
+      : response.status === 429 ? 'This workspace is receiving too many requests. Please wait a minute and retry.'
+      : response.status === 401 ? 'Please sign in with the workspace access key.'
       : response.status === 404 ? 'This run could not be found. Please submit a new petition.'
       : 'The service could not complete this request. Please try again.';
     throw new Error(message);
@@ -49,6 +70,12 @@ function renderResult(result) {
   outcome.append(element('h3', escalation ? 'Officer review needed' : 'Ready for academic officer review'));
   outcome.append(element('p', escalation ? 'This workflow could not establish a complete supported brief. An officer needs to identify the applicable provisions.' : 'Refer to the academic officer or committee. These provisions are supporting context; no final decision has been made.'));
   root.append(outcome);
+  if (result.position && result.position.recommendation!=='REFER_TO_COMMITTEE') {
+    const position = element('div',undefined,'outcome');
+    position.append(element('h3',result.position.recommendation==='GRANT_UNDER_PROVISION'?'Provision appears to permit processing':'Provision appears to restrict this request'));
+    result.position.reasons.forEach(reason=>position.append(element('p',reason)));
+    position.append(element('p','Conditional recommendation only · facts unverified · officer decision required.')); root.append(position);
+  }
   root.append(element('p', result.mode === 'STUB' ? 'Simulated model · real source checks · no hosted model requests. Semantic interpretation has not been validated.' : 'Extractive source checks only. Source matches do not establish eligibility.', 'field-hint'));
   if (findings.length) root.append(element('h3', `APPLICABLE PROVISIONS · ${findings.length}`, 'result-kicker'));
   for (const finding of findings) {
@@ -76,6 +103,13 @@ function renderResult(result) {
   }
   if (result.safety?.output === 'blocked') root.append(element('p', 'The final source or safety check failed. The proposed output was withheld for officer review.', 'error'));
   renderFeedback(root, activeRun);
+  const transparency=element('details',undefined,'transparency'); transparency.append(element('summary','Run transparency'));
+  const inputTokens=(result.usage||[]).reduce((sum,item)=>sum+(item.input_tokens||0),0);
+  const outputTokens=(result.usage||[]).reduce((sum,item)=>sum+(item.output_tokens||0),0);
+  transparency.append(element('p',`Cache: ${result.cache?.hit?'reused a source-checked brief':'fresh workflow'}. Input/output tokens: ${inputTokens}/${outputTokens}${(result.usage||[]).some(item=>item.estimated)?' (estimates)':''}.`));
+  transparency.append(element('p',`Trace reference: ${result.trace_id||'unavailable for this older run'}`));
+  for (const metric of result.metrics||[]) transparency.append(element('p',`${metric.agent}: ${metric.model_calls} model steps, ${metric.tool_calls} tools, ${metric.latency_seconds.toFixed(2)} seconds · ${metric.prompt_version}`));
+  root.append(transparency);
 }
 
 function renderFeedback(root, runId) {
@@ -163,7 +197,10 @@ $('petition-form').addEventListener('submit', async event => {
   if (!$('petition').value.trim()) { $('form-error').textContent = 'Please enter petition details.'; $('form-error').hidden = false; return; }
   $('submit').disabled = true;
   try {
-    const run = await request('/petitions', {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({petition: $('petition').value, synthetic: $('synthetic').checked})});
+    const facts={};
+    if ($('attendance-percent').value!=='') facts.attendance_percent=Number($('attendance-percent').value);
+    for (const [field,id] of [['medical_absence','medical-absence'],['exception_requested','exception-requested'],['summer_term','summer-term']]) if ($(id).value!=='') facts[field]=$(id).value==='true';
+    const run = await request('/petitions', {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({petition: $('petition').value, synthetic: $('synthetic').checked, facts})});
     showRun(run.run_id);
     await poll(activeRun, ++generation);
   } catch (error) { $('form-error').textContent = error.message; $('form-error').hidden = false; $('submit').disabled = false; }

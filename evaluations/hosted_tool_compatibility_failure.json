@@ -1,0 +1,63 @@
+{
+  "passed": false,
+  "provider_completed_two_roles": false,
+  "source_gate": "passed",
+  "status": "REVIEW_REQUIRED",
+  "claims": 0,
+  "metrics": [
+    {
+      "agent": "investigator",
+      "prompt_version": "investigator_v3",
+      "model_calls": 2,
+      "tool_calls": 1,
+      "tools_used": [
+        "search_regulations"
+      ],
+      "success": true,
+      "latency_seconds": 33.609
+    },
+    {
+      "agent": "verifier",
+      "prompt_version": "verifier_v4",
+      "model_calls": 1,
+      "tool_calls": 0,
+      "tools_used": [],
+      "success": false,
+      "latency_seconds": 1.75
+    }
+  ],
+  "usage": [
+    {
+      "agent": "investigator",
+      "attempt": 1,
+      "http_status": 200,
+      "success": true,
+      "input_tokens": 860,
+      "output_tokens": 314,
+      "billed_cost_usd": null,
+      "latency_seconds": 1.655999999999949
+    },
+    {
+      "agent": "investigator",
+      "attempt": 1,
+      "http_status": 200,
+      "success": true,
+      "input_tokens": 3281,
+      "output_tokens": 542,
+      "billed_cost_usd": null,
+      "latency_seconds": 4.063000000000102
+    },
+    {
+      "agent": "verifier",
+      "attempt": 1,
+      "http_status": 400,
+      "success": false,
+      "input_tokens": null,
+      "output_tokens": null,
+      "billed_cost_usd": null,
+      "latency_seconds": 1.75
+    }
+  ],
+  "failure_type": "ModelUnavailable",
+  "scope": "One live synthetic acceptance case. Full extractive identity, canonical metadata, complete pilot provision coverage and human-review boundary checked. This is not proof of broad LLM semantic accuracy."
+}

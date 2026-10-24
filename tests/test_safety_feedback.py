@@ -87,7 +87,7 @@ class SafetyTests(unittest.TestCase):
         metric = dict(agent='investigator', prompt_version='investigator_v2', model_calls=2,
                       tool_calls=1, tools_used=['search_regulations'], success=True, latency_seconds=.2)
         result['metrics'] = [metric]
-        self.assertEqual(guarded_result(result)['metrics'], [metric])
+        self.assertEqual(guarded_result(result)['metrics'], [metric | {'retries':0}])
         result['metrics'][0]['raw_prompt'] = 'must not be exposed'
         self.assertEqual(guarded_result(result)['safety']['output'], 'blocked')
 

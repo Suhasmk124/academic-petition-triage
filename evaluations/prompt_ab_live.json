@@ -1,0 +1,125 @@
+{
+  "complete": true,
+  "paired_cases": 1,
+  "variants": 2,
+  "results": [
+    {
+      "case": "attendance-threshold",
+      "variant": "baseline",
+      "provider_used": false,
+      "orchestration_status": "REVIEW_REQUIRED",
+      "source_gate": "MODEL_OUTPUT_UNAVAILABLE",
+      "accepted_findings": 0,
+      "prompts": {
+        "investigator": "70df59963b1a49c19a8285f11e8830888dca01311643d69c1dff13dce0ec09f8",
+        "verifier": "93769286b1e039e322d8057fdf4f505cdddb77697eb1cb1de0fd762440367b7f"
+      },
+      "usage": [
+        {
+          "agent": "investigator",
+          "attempt": 1,
+          "http_status": 200,
+          "success": true,
+          "input_tokens": 822,
+          "output_tokens": 71,
+          "billed_cost_usd": null,
+          "latency_seconds": 0.7970000000000255
+        },
+        {
+          "agent": "investigator",
+          "attempt": 1,
+          "http_status": 200,
+          "success": true,
+          "input_tokens": 1791,
+          "output_tokens": 630,
+          "billed_cost_usd": null,
+          "latency_seconds": 1.3279999999999745
+        },
+        {
+          "agent": "verifier",
+          "attempt": 1,
+          "http_status": 200,
+          "success": true,
+          "input_tokens": 1380,
+          "output_tokens": 255,
+          "billed_cost_usd": null,
+          "latency_seconds": 0.46900000000005093
+        }
+      ],
+      "provider_http_succeeded": true,
+      "orchestration_completed": false
+    },
+    {
+      "case": "attendance-threshold",
+      "variant": "strict",
+      "provider_used": true,
+      "orchestration_status": "REVIEW_REQUIRED",
+      "source_gate": "passed",
+      "accepted_findings": 3,
+      "prompts": {
+        "investigator": "48d9d8c525fbc9f7a73a3019086b68311524d57d8fab94f0a8b5f7baf05da9c8",
+        "verifier": "3370701f23010afa5c961769d64cdcebea0fa6ee2fbc6d4051f11222b406c35b"
+      },
+      "usage": [
+        {
+          "agent": "investigator",
+          "attempt": 1,
+          "http_status": 200,
+          "success": true,
+          "input_tokens": 844,
+          "output_tokens": 410,
+          "billed_cost_usd": null,
+          "latency_seconds": 0.875
+        },
+        {
+          "agent": "investigator",
+          "attempt": 1,
+          "http_status": 200,
+          "success": true,
+          "input_tokens": 896,
+          "output_tokens": 74,
+          "billed_cost_usd": null,
+          "latency_seconds": 0.75
+        },
+        {
+          "agent": "investigator",
+          "attempt": 1,
+          "http_status": 200,
+          "success": true,
+          "input_tokens": 4291,
+          "output_tokens": 1684,
+          "billed_cost_usd": null,
+          "latency_seconds": 48.13999999999987
+        },
+        {
+          "agent": "verifier",
+          "attempt": 1,
+          "http_status": 200,
+          "success": true,
+          "input_tokens": 2435,
+          "output_tokens": 180,
+          "billed_cost_usd": null,
+          "latency_seconds": 38.672000000000025
+        },
+        {
+          "agent": "verifier",
+          "attempt": 1,
+          "http_status": 200,
+          "success": true,
+          "input_tokens": 2599,
+          "output_tokens": 861,
+          "billed_cost_usd": null,
+          "latency_seconds": 1.5470000000000255
+        }
+      ],
+      "provider_http_succeeded": true,
+      "orchestration_completed": true
+    }
+  ],
+  "raw_quota_run": "evaluations/prompt_ab_quota_run.json",
+  "excluded_cases": [
+    "attendance-midterm"
+  ],
+  "tool_start_policy": "auto (original orchestration; required initial verifier tool added afterwards)",
+  "scope": "Small paired live experiment. A model/tool failure counts as a failed model output, not a successful deterministic fallback. Rate-limited cells excluded and preserved. Not a held-out statistical benchmark."
+}

@@ -1,0 +1,125 @@
+{
+  "passed": false,
+  "provider_completed_two_roles": false,
+  "source_gate": "passed",
+  "status": "REVIEW_REQUIRED",
+  "claims": 0,
+  "metrics": [
+    {
+      "agent": "investigator",
+      "prompt_version": "investigator_v4",
+      "model_calls": 2,
+      "tool_calls": 1,
+      "tools_used": [
+        "search_regulations"
+      ],
+      "success": true,
+      "retries": 0,
+      "latency_seconds": 17.609
+    },
+    {
+      "agent": "verifier",
+      "prompt_version": "verifier_v4",
+      "model_calls": 2,
+      "tool_calls": 1,
+      "tools_used": [
+        "verify_claim_quotes"
+      ],
+      "success": false,
+      "retries": 0,
+      "latency_seconds": 39.953
+    }
+  ],
+  "usage": [
+    {
+      "agent": "investigator",
+      "attempt": 1,
+      "http_status": 200,
+      "success": true,
+      "input_tokens": 1083,
+      "output_tokens": 49,
+      "billed_cost_usd": null,
+      "latency_seconds": 0.6710000000000491,
+      "provider_error_code": null,
+      "provider_error_type": null,
+      "provider_error_message": null,
+      "response_shape": {
+        "content_characters": 0,
+        "tools": [
+          {
+            "name": "search_regulations",
+            "argument_keys": [
+              "query"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "agent": "investigator",
+      "attempt": 1,
+      "http_status": 200,
+      "success": true,
+      "input_tokens": 4708,
+      "output_tokens": 170,
+      "billed_cost_usd": null,
+      "latency_seconds": 1.0629999999999882,
+      "provider_error_code": null,
+      "provider_error_type": null,
+      "provider_error_message": null,
+      "response_shape": {
+        "content_characters": 0,
+        "tools": [
+          {
+            "name": "JSON",
+            "argument_keys": [
+              "claims",
+              "routing_recommendation"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "agent": "verifier",
+      "attempt": 1,
+      "http_status": 200,
+      "success": true,
+      "input_tokens": 2698,
+      "output_tokens": 85,
+      "billed_cost_usd": null,
+      "latency_seconds": 37.28099999999995,
+      "provider_error_code": null,
+      "provider_error_type": null,
+      "provider_error_message": null,
+      "response_shape": {
+        "content_characters": 0,
+        "tools": [
+          {
+            "name": "verify_claim_quotes",
+            "argument_keys": [
+              "evidence_ids"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "agent": "verifier",
+      "attempt": 1,
+      "http_status": 400,
+      "success": false,
+      "input_tokens": null,
+      "output_tokens": null,
+      "billed_cost_usd": null,
+      "latency_seconds": 1.0159999999999627,
+      "provider_error_code": "tool_use_failed",
+      "provider_error_type": "invalid_request_error",
+      "provider_error_message": "Failed to parse tool call arguments as JSON",
+      "response_shape": null
+    }
+  ],
+  "failure_type": "ModelUnavailable",
+  "failure_reason": "Model request failed with HTTP 400.",
+  "scope": "One live synthetic acceptance case. Full extractive identity, canonical metadata, complete pilot provision coverage and human-review boundary checked. This is not proof of broad LLM semantic accuracy."
+}

@@ -1,0 +1,79 @@
+{
+  "passed": false,
+  "provider_completed_two_roles": false,
+  "source_gate": "passed",
+  "status": "REVIEW_REQUIRED",
+  "claims": 0,
+  "metrics": [
+    {
+      "agent": "investigator",
+      "prompt_version": "investigator_v3",
+      "model_calls": 4,
+      "tool_calls": 3,
+      "tools_used": [
+        "search_regulations",
+        "fetch_exact_clause",
+        "fetch_exact_clause"
+      ],
+      "success": false,
+      "latency_seconds": 125.844
+    }
+  ],
+  "usage": [
+    {
+      "agent": "investigator",
+      "attempt": 1,
+      "http_status": 200,
+      "success": true,
+      "input_tokens": 1202,
+      "output_tokens": 69,
+      "billed_cost_usd": null,
+      "latency_seconds": 1.718999999999994,
+      "provider_error_code": null,
+      "provider_error_type": null,
+      "provider_error_message": null
+    },
+    {
+      "agent": "investigator",
+      "attempt": 1,
+      "http_status": 200,
+      "success": true,
+      "input_tokens": 4841,
+      "output_tokens": 40,
+      "billed_cost_usd": null,
+      "latency_seconds": 1.2970000000000255,
+      "provider_error_code": null,
+      "provider_error_type": null,
+      "provider_error_message": null
+    },
+    {
+      "agent": "investigator",
+      "attempt": 1,
+      "http_status": 200,
+      "success": true,
+      "input_tokens": 5223,
+      "output_tokens": 60,
+      "billed_cost_usd": null,
+      "latency_seconds": 39.827999999999975,
+      "provider_error_code": null,
+      "provider_error_type": null,
+      "provider_error_message": null
+    },
+    {
+      "agent": "investigator",
+      "attempt": 1,
+      "http_status": 200,
+      "success": true,
+      "input_tokens": 5560,
+      "output_tokens": 10,
+      "billed_cost_usd": null,
+      "latency_seconds": 41.43799999999999,
+      "provider_error_code": null,
+      "provider_error_type": null,
+      "provider_error_message": null
+    }
+  ],
+  "failure_type": "ValidationError",
+  "failure_reason": "Model output did not meet the validated contract.",
+  "scope": "One live synthetic acceptance case. Full extractive identity, canonical metadata, complete pilot provision coverage and human-review boundary checked. This is not proof of broad LLM semantic accuracy."
+}

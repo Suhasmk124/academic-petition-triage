@@ -50,9 +50,15 @@ class JobStore:
                     run_id TEXT PRIMARY KEY REFERENCES jobs(run_id), rating TEXT NOT NULL,
                     category TEXT NOT NULL, comment TEXT NOT NULL, updated_at REAL NOT NULL
                 );
+                CREATE TABLE IF NOT EXISTS cache (key TEXT PRIMARY KEY, result_json TEXT NOT NULL, expires_at REAL NOT NULL);
+                CREATE TABLE IF NOT EXISTS limits (key TEXT PRIMARY KEY, count INTEGER NOT NULL, expires_at REAL NOT NULL);
             ''')
+            columns = {row['name'] for row in con.execute('PRAGMA table_info(jobs)')}
+            for name in ('traceparent', 'cache_key', 'facts_json'):
+                if name not in columns:
+                    con.execute(f'ALTER TABLE jobs ADD COLUMN {name} TEXT')
 
-    def submit(self, petition, mode, correlation_id, capacity=100):
+    def submit(self, petition, mode, correlation_id, capacity=100, traceparent=None, cache_key=None, facts=None):
         now, run_id = self.clock(), str(uuid4())
         with self.connection() as con:
             con.execute('BEGIN IMMEDIATE')
@@ -60,8 +66,8 @@ class JobStore:
                 pending = con.execute("SELECT COUNT(*) FROM jobs WHERE status IN ('QUEUED','RUNNING')").fetchone()[0]
                 if pending >= capacity:
                     raise QueueFull('Queue capacity reached')
-                con.execute('INSERT INTO jobs(run_id,petition,mode,correlation_id,status,created_at,updated_at) VALUES(?,?,?,?,?,?,?)',
-                            (run_id, petition, mode, correlation_id, 'QUEUED', now, now))
+                con.execute('INSERT INTO jobs(run_id,petition,mode,correlation_id,status,created_at,updated_at,traceparent,cache_key,facts_json) VALUES(?,?,?,?,?,?,?,?,?,?)',
+                            (run_id, petition, mode, correlation_id, 'QUEUED', now, now, traceparent, cache_key, json.dumps(facts) if facts else None))
                 con.commit()
             except BaseException:
                 con.rollback()
@@ -87,7 +93,7 @@ class JobStore:
         result['result'] = json.loads(result_json) if result_json is not None else None
         result['error'] = json.loads(error_json) if error_json is not None else None
         # Internal petition and lease data are never returned by status polling.
-        for key in ('petition', 'lease_token', 'lease_until'):
+        for key in ('petition', 'lease_token', 'lease_until', 'traceparent', 'cache_key', 'facts_json'):
             result.pop(key)
         result['triage_status'] = result['result'].get('status') if result['result'] else None
         return result

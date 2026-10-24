@@ -12,6 +12,7 @@ class AgentMetric(Contract):
     agent: Literal['investigator', 'verifier']
     prompt_version: str = Field(pattern=r'^(investigator|verifier)_v[0-9]+$')
     model_calls: StrictInt = Field(ge=0, le=6)
+    retries: StrictInt = Field(default=0,ge=0,le=6)
     tool_calls: StrictInt = Field(ge=0, le=6)
     tools_used: list[Literal['search_regulations', 'fetch_exact_clause', 'verify_claim_quotes']] = Field(max_length=6)
     success: bool
@@ -108,6 +109,15 @@ def guarded_result(result, petition=None):
         if not isinstance(metrics, list) or len(metrics) > 4:
             raise ValueError('Invalid agent metrics')
         output['metrics'] = [AgentMetric.model_validate(entry).model_dump() for entry in metrics]
+        output['usage'] = []
+        for event in result.get('model_usage',[])[:48]:
+            if event.get('agent') not in ('investigator','verifier'): continue
+            usage = {'agent':event['agent'], 'estimated':bool(event.get('estimated',False))}
+            for key in ('input_tokens','output_tokens'):
+                value = event.get(key)
+                usage[key] = value if isinstance(value,int) and 0<=value<=1000000 else None
+            usage['billed_cost_usd'] = 0.0 if result.get('mode')=='STUB' else event.get('billed_cost_usd')
+            output['usage'].append(usage)
         output.update(human_review_required=True, final_decision_made=False,
                       safety={'version': VERSION, 'input': 'passed', 'output': 'passed'})
         return output

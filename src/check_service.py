@@ -23,6 +23,8 @@ def main():
                    TRIAGE_STUB_DELAY_SECONDS='0', LLM_API_KEY='', LLM_FREE_PLAN_CONFIRMED='false',
                    HF_HUB_OFFLINE='1', TRANSFORMERS_OFFLINE='1', ANONYMIZED_TELEMETRY='False',
                    PYTHONIOENCODING='utf-8')
+        env.update(TRIAGE_API_KEY='',TRIAGE_API_KEY_FILE='',REDIS_URL='',STUB_SERVICE_URL='',
+                   TRIAGE_RATE_LIMIT='0',TRIAGE_CACHE_TTL='0',OTEL_EXPORTER_OTLP_ENDPOINT='')
         flags = subprocess.CREATE_NO_WINDOW if os.name == 'nt' else 0
         handles, processes = [], []
         def start(command, name):

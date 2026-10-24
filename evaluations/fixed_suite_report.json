@@ -1,9 +1,9 @@
 {
   "dataset_version": 1,
-  "dataset_sha256": "205655d9c7cc780e7f6fb89ce1cf2ba94b2ca096682a34478661390b9bc579ff",
-  "scenarios": 24,
+  "dataset_sha256": "423700a30103e989626d2bab717edae0469c052b055eca2c11d4570646b5ffdd",
+  "scenarios": 30,
   "supported_retrieval_cases": 20,
-  "workflow_runs": 48,
+  "workflow_runs": 60,
   "all_workflows_passed": true,
   "billable_model_requests": 0,
   "retrieval_comparison": {
@@ -923,6 +923,150 @@
     },
     {
       "id": "unsupported-transcript",
+      "retrieval": {},
+      "workflows": {
+        "deterministic": {
+          "passed": true,
+          "status": "ESCALATE",
+          "service_output_guard_passed": true,
+          "findings": 0,
+          "source_grounded": 0,
+          "extractive_faithfulness": null,
+          "unsupported_extractive_findings": 0
+        },
+        "stub": {
+          "passed": true,
+          "status": "ESCALATE",
+          "service_output_guard_passed": true,
+          "findings": 0,
+          "source_grounded": 0,
+          "extractive_faithfulness": null,
+          "unsupported_extractive_findings": 0
+        }
+      }
+    },
+    {
+      "id": "unsupported-parking-attendance",
+      "retrieval": {},
+      "workflows": {
+        "deterministic": {
+          "passed": true,
+          "status": "ESCALATE",
+          "service_output_guard_passed": true,
+          "findings": 0,
+          "source_grounded": 0,
+          "extractive_faithfulness": null,
+          "unsupported_extractive_findings": 0
+        },
+        "stub": {
+          "passed": true,
+          "status": "ESCALATE",
+          "service_output_guard_passed": true,
+          "findings": 0,
+          "source_grounded": 0,
+          "extractive_faithfulness": null,
+          "unsupported_extractive_findings": 0
+        }
+      }
+    },
+    {
+      "id": "unsupported-employee",
+      "retrieval": {},
+      "workflows": {
+        "deterministic": {
+          "passed": true,
+          "status": "ESCALATE",
+          "service_output_guard_passed": true,
+          "findings": 0,
+          "source_grounded": 0,
+          "extractive_faithfulness": null,
+          "unsupported_extractive_findings": 0
+        },
+        "stub": {
+          "passed": true,
+          "status": "ESCALATE",
+          "service_output_guard_passed": true,
+          "findings": 0,
+          "source_grounded": 0,
+          "extractive_faithfulness": null,
+          "unsupported_extractive_findings": 0
+        }
+      }
+    },
+    {
+      "id": "unsupported-other-university",
+      "retrieval": {},
+      "workflows": {
+        "deterministic": {
+          "passed": true,
+          "status": "ESCALATE",
+          "service_output_guard_passed": true,
+          "findings": 0,
+          "source_grounded": 0,
+          "extractive_faithfulness": null,
+          "unsupported_extractive_findings": 0
+        },
+        "stub": {
+          "passed": true,
+          "status": "ESCALATE",
+          "service_output_guard_passed": true,
+          "findings": 0,
+          "source_grounded": 0,
+          "extractive_faithfulness": null,
+          "unsupported_extractive_findings": 0
+        }
+      }
+    },
+    {
+      "id": "unsupported-college",
+      "retrieval": {},
+      "workflows": {
+        "deterministic": {
+          "passed": true,
+          "status": "ESCALATE",
+          "service_output_guard_passed": true,
+          "findings": 0,
+          "source_grounded": 0,
+          "extractive_faithfulness": null,
+          "unsupported_extractive_findings": 0
+        },
+        "stub": {
+          "passed": true,
+          "status": "ESCALATE",
+          "service_output_guard_passed": true,
+          "findings": 0,
+          "source_grounded": 0,
+          "extractive_faithfulness": null,
+          "unsupported_extractive_findings": 0
+        }
+      }
+    },
+    {
+      "id": "unsupported-school",
+      "retrieval": {},
+      "workflows": {
+        "deterministic": {
+          "passed": true,
+          "status": "ESCALATE",
+          "service_output_guard_passed": true,
+          "findings": 0,
+          "source_grounded": 0,
+          "extractive_faithfulness": null,
+          "unsupported_extractive_findings": 0
+        },
+        "stub": {
+          "passed": true,
+          "status": "ESCALATE",
+          "service_output_guard_passed": true,
+          "findings": 0,
+          "source_grounded": 0,
+          "extractive_faithfulness": null,
+          "unsupported_extractive_findings": 0
+        }
+      }
+    },
+    {
+      "id": "unsupported-tuition",
       "retrieval": {},
       "workflows": {
         "deterministic": {

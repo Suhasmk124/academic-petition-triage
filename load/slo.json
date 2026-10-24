@@ -1,0 +1,11 @@
+{
+  "declared_before_measurement": true,
+  "workload": "10 concurrent synthetic attendance clients; real local retrieval, simulated model with 0.15 seconds per model step; warm model; no hosted calls",
+  "submission_p95_ms": 750,
+  "workflow_p95_ms": 10000,
+  "maximum_failure_ratio": 0.01,
+  "duration_seconds": 60,
+  "scale_comparison": [1, 3],
+  "cache_comparison": ["disabled", "enabled"],
+  "scope": "Development acceptance targets for this stated workload, not a universal production guarantee. A failed target must remain visible."
+}

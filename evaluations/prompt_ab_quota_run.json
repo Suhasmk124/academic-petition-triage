@@ -1,0 +1,191 @@
+{
+  "results": [
+    {
+      "case": "attendance-threshold",
+      "variant": "baseline",
+      "provider_used": false,
+      "orchestration_status": "REVIEW_REQUIRED",
+      "source_gate": "passed",
+      "accepted_findings": 0,
+      "prompts": {
+        "investigator": "70df59963b1a49c19a8285f11e8830888dca01311643d69c1dff13dce0ec09f8",
+        "verifier": "93769286b1e039e322d8057fdf4f505cdddb77697eb1cb1de0fd762440367b7f"
+      },
+      "usage": [
+        {
+          "agent": "investigator",
+          "attempt": 1,
+          "http_status": 200,
+          "success": true,
+          "input_tokens": 822,
+          "output_tokens": 71,
+          "billed_cost_usd": null,
+          "latency_seconds": 0.7970000000000255
+        },
+        {
+          "agent": "investigator",
+          "attempt": 1,
+          "http_status": 200,
+          "success": true,
+          "input_tokens": 1791,
+          "output_tokens": 630,
+          "billed_cost_usd": null,
+          "latency_seconds": 1.3279999999999745
+        },
+        {
+          "agent": "verifier",
+          "attempt": 1,
+          "http_status": 200,
+          "success": true,
+          "input_tokens": 1380,
+          "output_tokens": 255,
+          "billed_cost_usd": null,
+          "latency_seconds": 0.46900000000005093
+        }
+      ]
+    },
+    {
+      "case": "attendance-threshold",
+      "variant": "strict",
+      "provider_used": true,
+      "orchestration_status": "REVIEW_REQUIRED",
+      "source_gate": "passed",
+      "accepted_findings": 3,
+      "prompts": {
+        "investigator": "48d9d8c525fbc9f7a73a3019086b68311524d57d8fab94f0a8b5f7baf05da9c8",
+        "verifier": "3370701f23010afa5c961769d64cdcebea0fa6ee2fbc6d4051f11222b406c35b"
+      },
+      "usage": [
+        {
+          "agent": "investigator",
+          "attempt": 1,
+          "http_status": 200,
+          "success": true,
+          "input_tokens": 844,
+          "output_tokens": 410,
+          "billed_cost_usd": null,
+          "latency_seconds": 0.875
+        },
+        {
+          "agent": "investigator",
+          "attempt": 1,
+          "http_status": 200,
+          "success": true,
+          "input_tokens": 896,
+          "output_tokens": 74,
+          "billed_cost_usd": null,
+          "latency_seconds": 0.75
+        },
+        {
+          "agent": "investigator",
+          "attempt": 1,
+          "http_status": 200,
+          "success": true,
+          "input_tokens": 4291,
+          "output_tokens": 1684,
+          "billed_cost_usd": null,
+          "latency_seconds": 48.13999999999987
+        },
+        {
+          "agent": "verifier",
+          "attempt": 1,
+          "http_status": 200,
+          "success": true,
+          "input_tokens": 2435,
+          "output_tokens": 180,
+          "billed_cost_usd": null,
+          "latency_seconds": 38.672000000000025
+        },
+        {
+          "agent": "verifier",
+          "attempt": 1,
+          "http_status": 200,
+          "success": true,
+          "input_tokens": 2599,
+          "output_tokens": 861,
+          "billed_cost_usd": null,
+          "latency_seconds": 1.5470000000000255
+        }
+      ]
+    },
+    {
+      "case": "attendance-midterm",
+      "variant": "baseline",
+      "provider_used": true,
+      "orchestration_status": "REVIEW_REQUIRED",
+      "source_gate": "blocked",
+      "accepted_findings": 0,
+      "prompts": {
+        "investigator": "70df59963b1a49c19a8285f11e8830888dca01311643d69c1dff13dce0ec09f8",
+        "verifier": "93769286b1e039e322d8057fdf4f505cdddb77697eb1cb1de0fd762440367b7f"
+      },
+      "usage": [
+        {
+          "agent": "investigator",
+          "attempt": 1,
+          "http_status": 200,
+          "success": true,
+          "input_tokens": 829,
+          "output_tokens": 180,
+          "billed_cost_usd": null,
+          "latency_seconds": 56.84400000000005
+        },
+        {
+          "agent": "investigator",
+          "attempt": 1,
+          "http_status": 200,
+          "success": true,
+          "input_tokens": 3253,
+          "output_tokens": 745,
+          "billed_cost_usd": null,
+          "latency_seconds": 1.2179999999998472
+        },
+        {
+          "agent": "verifier",
+          "attempt": 1,
+          "http_status": 200,
+          "success": true,
+          "input_tokens": 2388,
+          "output_tokens": 85,
+          "billed_cost_usd": null,
+          "latency_seconds": 45.172000000000025
+        },
+        {
+          "agent": "verifier",
+          "attempt": 1,
+          "http_status": 200,
+          "success": true,
+          "input_tokens": 2552,
+          "output_tokens": 805,
+          "billed_cost_usd": null,
+          "latency_seconds": 1.405999999999949
+        }
+      ]
+    },
+    {
+      "case": "attendance-midterm",
+      "variant": "strict",
+      "provider_used": false,
+      "orchestration_status": "REVIEW_REQUIRED",
+      "source_gate": "passed",
+      "accepted_findings": 0,
+      "prompts": {
+        "investigator": "48d9d8c525fbc9f7a73a3019086b68311524d57d8fab94f0a8b5f7baf05da9c8",
+        "verifier": "3370701f23010afa5c961769d64cdcebea0fa6ee2fbc6d4051f11222b406c35b"
+      },
+      "usage": [
+        {
+          "agent": "investigator",
+          "attempt": 1,
+          "http_status": 429,
+          "success": false,
+          "input_tokens": null,
+          "output_tokens": null,
+          "billed_cost_usd": null,
+          "latency_seconds": 0.047000000000025466
+        }
+      ]
+    }
+  ],
+  "complete": false
+}

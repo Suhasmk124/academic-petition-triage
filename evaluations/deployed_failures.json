@@ -1,0 +1,53 @@
+{
+  "passed": true,
+  "deployment": "Docker Compose",
+  "stub_outage": [
+    {
+      "run_id": "91f106fc-887b-47f3-a67b-229af744df4c",
+      "reliability": {
+        "fallback": true,
+        "reason": "STUB_UNAVAILABLE",
+        "job_attempt": 1
+      }
+    },
+    {
+      "run_id": "de60b724-d3ee-445f-96c4-532b0660bf90",
+      "reliability": {
+        "fallback": true,
+        "reason": "STUB_UNAVAILABLE",
+        "job_attempt": 1
+      }
+    },
+    {
+      "run_id": "a9cc1d3f-adef-4693-a2ba-888b1757a551",
+      "reliability": {
+        "fallback": true,
+        "reason": "STUB_UNAVAILABLE",
+        "job_attempt": 1
+      }
+    },
+    {
+      "run_id": "fad7fd1c-49e1-4c41-afbc-5e4861360951",
+      "reliability": {
+        "fallback": true,
+        "reason": "CIRCUIT_OPEN",
+        "job_attempt": 1
+      }
+    },
+    {
+      "run_id": "e0ff6912-adb4-4738-8c99-734bb07c4d97",
+      "reliability": {
+        "fallback": false,
+        "reason": null,
+        "job_attempt": 1
+      }
+    }
+  ],
+  "rate_limit_statuses": [
+    202,
+    202,
+    429
+  ],
+  "cache_disabled": true,
+  "hosted_requests": 0
+}

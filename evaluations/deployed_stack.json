@@ -1,0 +1,44 @@
+{
+  "passed": true,
+  "url": "http://127.0.0.1:8000",
+  "checks": [
+    {
+      "position": "REFER_TO_COMMITTEE",
+      "run_id": "4b7fc9a4-ca7f-4dcb-97ef-8b59458ffd3c",
+      "trace_id": "a86e960c06e69f2f39993d3814d2afdc",
+      "cache_hit": false
+    },
+    {
+      "position": "GRANT_UNDER_PROVISION",
+      "run_id": "c908691f-160a-4128-bb0f-b39391976cdc",
+      "trace_id": "0e9f5b38647fbb71353b49858c563e9b",
+      "cache_hit": true
+    },
+    {
+      "position": "REJECT_UNDER_PROVISION",
+      "run_id": "b6d82909-318e-4684-bf96-9aeee22ea544",
+      "trace_id": "fc5877ae180b3ce602465a4f39bfd70a",
+      "cache_hit": true
+    }
+  ],
+  "invalid_quarantined": true,
+  "injection_blocked": true,
+  "feedback_saved": true,
+  "quality_sampled": true,
+  "pdf_verified": true,
+  "observability": {
+    "jaeger_trace_found": true,
+    "span_names": [
+      "agent.investigator",
+      "agent.verifier",
+      "http.request",
+      "stub.workflow",
+      "tool.search_regulations",
+      "tool.verify_claim_quotes",
+      "worker.job"
+    ],
+    "prometheus_scraping": true,
+    "grafana_database": "ok"
+  },
+  "scope": "Deployed functional acceptance; performance is measured separately by benchmark.py."
+}

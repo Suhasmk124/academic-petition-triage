@@ -7,8 +7,16 @@ class StubChat:
     events = []
     def __init__(self, delay=.15):
         self.delay = delay
+        self.events = []
 
     def complete(self, role, messages, tools):
+        self.events.append(dict(agent=role,input_tokens=(len(json.dumps(messages))+3)//4,output_tokens=0,
+                                estimated=True,billed_cost_usd=0.0))
+        result = self._complete(role,messages,tools)
+        self.events[-1]['output_tokens'] = (len(json.dumps(result))+3)//4
+        return result
+
+    def _complete(self, role, messages, tools):
         time.sleep(self.delay)
         payload = json.loads(messages[1]['content'])
         outputs = [json.loads(m['content']) for m in messages if m['role'] == 'tool']
@@ -25,12 +33,16 @@ class StubChat:
                      'missing_evidence': MISSING_EVIDENCE[classify(payload['petition'])],
                      'routing_recommendation': 'REFER_TO_COMMITTEE',
                      'reasons': ['Simulated extractive workflow; no real LLM semantic judgment.']}
+            if 'investigator_v4' in messages[0]['content'] or any(schema.get('function',{}).get('parameters',{}).get('title')=='InvestigationSelection' for schema in tools):
+                for claim in draft['claims']:claim.pop('statement',None)
             return {'role': 'assistant', 'content': json.dumps(draft)}
         if not outputs:
             return self.call('verify_claim_quotes', payload['quote_check_arguments'], len(messages))
         checked = {r['evidence_id']: r['quote_supported'] for output in outputs for r in output.get('results', [])}
         verdicts = [{'claim_id': c['claim_id'], 'supported': checked.get(c['evidence_id'], False),
                      'reason': 'Simulated extractive quote check, not an LLM semantic judgment.'} for c in payload['draft']['claims']]
+        if any(schema.get('function',{}).get('parameters',{}).get('title')=='ReviewDecision' for schema in tools):
+            for verdict in verdicts:verdict.pop('reason',None)
         return {'role': 'assistant', 'content': json.dumps({'verdicts': verdicts,
                 'needs_research': not all(v['supported'] for v in verdicts), 'research_query': ''})}
 
