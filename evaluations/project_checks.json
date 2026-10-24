@@ -1,6 +1,6 @@
 {
   "service_http_smoke_passed": true,
-  "unit_tests": 60,
+  "unit_tests": 76,
   "unit_passed": true,
   "retrieval_checks": 11,
   "live_workflows": [
@@ -33,6 +33,7 @@
   "live_hosted_validation": false,
   "semantic_entailment_verified": false,
   "fixed_scenarios": 24,
+  "safety_rule_cases": 22,
   "fixed_workflow_runs": 48,
   "scope": "Local regression and extractive evaluation only; hosted semantic quality and prompt A/B remain unvalidated."
 }

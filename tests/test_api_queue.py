@@ -94,7 +94,11 @@ class APITests(unittest.TestCase):
         self.directory.cleanup()
     def fake_run(self, petition, mode):
         self.calls.append((petition, mode))
-        return {'status': 'REVIEW_REQUIRED', 'mode': 'STUB', 'assessment': {'routing_recommendation': 'REFER_TO_COMMITTEE', 'final_decision_made': False}}
+        from assessment import build_assessment
+        from index_corpus import reviewed
+        from retrieval import citation, source_pages
+        evidence = {'passages': [{'citations': [citation(record) for record in reviewed(source_pages())]}]}
+        return {'status': 'REVIEW_REQUIRED', 'mode': 'STUB', 'assessment': build_assessment(petition, evidence).model_dump()}
     def counts(self):
         with self.store.connection() as con:
             return (con.execute('SELECT COUNT(*) FROM jobs').fetchone()[0],

@@ -98,6 +98,8 @@ class EvidenceTools:
         citations.extend(c for p in result.get('passages', []) for c in p.get('citations', []))
         reviewed = [c for c in citations if c.get('citation_metadata_verified')]
         for c in reviewed:
+            from safety import check_input
+            check_input(c['exact_quote'])
             self.bank[c['evidence_id']] = c
         # Omit duplicated page context to conserve the free tier's token allowance.
         return {'status': result.get('status'), 'citations': reviewed}
@@ -182,6 +184,8 @@ class AgentState(TypedDict, total=False):
 
 def run_agents(petition, model, tools=None):
     request = PetitionRequest(petition=petition)
+    from safety import check_input
+    check_input(request.petition)
     tools = tools or EvidenceTools()
     metrics = []
 
@@ -259,6 +263,8 @@ def run_agents(petition, model, tools=None):
 
 def run_hosted(petition):
     request = PetitionRequest(petition=petition)
+    from safety import check_input
+    check_input(request.petition)
     model = None
     try:
         model = HostedChat(HostedSettings.from_env())

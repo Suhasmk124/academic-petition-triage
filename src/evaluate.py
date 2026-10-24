@@ -41,6 +41,7 @@ def main():
     from retrieval import resources, read_records, citation, validate_record, retrieve
     from workflow import run_petition
     from stub_model import run_stub
+    from safety import guarded_result
     raw = DATASET.read_bytes()
     cases = json.loads(raw)
     if len(cases) < 20 or len({case['id'] for case in cases}) != len(cases):
@@ -73,6 +74,7 @@ def main():
             workflows = {}
             for name, runner in [('deterministic', run_petition), ('stub', lambda text: run_stub(text, delay=0))]:
                 result = runner(case['petition'])
+                service_output = guarded_result(result, case['petition'])
                 brief = result.get('draft') or result['assessment']
                 findings = brief.get('claims', brief.get('findings', []))
                 score = score_findings(findings, canonical)
@@ -88,7 +90,9 @@ def main():
                     passed = passed and result['billable_model_requests'] == 0 and not result['provider_response_used']
                     if expected:
                         passed = passed and result['stub_workflow_path'] == 'TWO_ROLE_SIMULATED'
-                workflows[name] = dict(passed=passed, status=result['status'], **score)
+                guard_passed = service_output['safety']['output'] == 'passed' and service_output['status'] == case['status']
+                passed = passed and guard_passed
+                workflows[name] = dict(passed=passed, status=result['status'], service_output_guard_passed=guard_passed, **score)
             rows.append(dict(id=case['id'], retrieval=retrieval, workflows=workflows))
             print('PASS:' if all(item['passed'] for item in workflows.values()) else 'FAIL:', case['id'], flush=True)
     comparisons = [row['retrieval'] for row in rows if row['retrieval']]

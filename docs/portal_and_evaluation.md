@@ -4,7 +4,7 @@
 
 FastAPI now serves a buildless HTML/CSS/JavaScript portal at `/`. The same service still provides `/docs`. No JavaScript packages, remote fonts or external assets are required. The interface includes sample petitions, the synthetic-data declaration, input limits, worker connectivity, queue progress, run references, full source quotations, verified page labels, generated-locator notices, supporting-record checklists and human review outcomes. Content is inserted as text, never interpreted as HTML. Polling has request timeouts, bounded connection retries and a manual resume option. A new submission can be made after completion.
 
-The service remains a local prototype without authentication. Its default is the simulated model with real local retrieval and source checks. It does not spend hosted API quota. The interface labels this explicitly. It does not make eligibility decisions. There is no user account, document upload or case-history browser yet; keep the run ID to retrieve a result through the API after refreshing.
+The service remains a local prototype without authentication. Its default is the simulated model with real local retrieval and source checks. It does not spend hosted API quota. The interface labels this explicitly. It does not make eligibility decisions. There is no user account, document upload or case-history list yet. The later safety/feedback stage adds bookmark and run-ID recovery, saved review feedback and direct PDF links; see `docs/safety_feedback_stage.md`.
 
 ## Run locally
 

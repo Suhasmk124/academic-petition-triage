@@ -1,7 +1,7 @@
 """API contracts. Execution state is separate from the academic-review recommendation."""
 from typing import Literal
 from uuid import UUID
-from pydantic import field_validator
+from pydantic import Field, field_validator
 from assessment import Contract, PetitionRequest
 from service_config import ExecutionMode
 
@@ -23,6 +23,19 @@ class AcceptedRun(Contract):
     mode: ExecutionMode
     correlation_id: UUID
     poll_url: str
+
+
+class Feedback(Contract):
+    rating: Literal['helpful', 'needs_review']
+    category: Literal['none', 'missing_rule', 'incorrect_citation', 'unclear', 'other'] = 'none'
+    comment: str = Field(default='', max_length=500)
+    synthetic: Literal[True]
+    @field_validator('synthetic', mode='before')
+    @classmethod
+    def synthetic_only(cls, value):
+        if value is not True:
+            raise ValueError('Only explicitly synthetic feedback is accepted')
+        return value
 
 class RunView(Contract):
     run_id: UUID

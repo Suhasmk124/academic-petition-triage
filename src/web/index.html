@@ -34,6 +34,12 @@
           <p class="form-foot">IISc Undergraduate Handbook · 2025–26</p>
           <div id="form-error" class="error" role="alert" hidden></div>
         </form>
+        <form id="reopen-form" class="reopen-form">
+          <label for="reopen-id">Reopen a previous run</label>
+          <p class="field-hint">Paste its run ID, or bookmark the page after submitting. Your petition stays out of the URL.</p>
+          <div class="reopen-row"><input id="reopen-id" type="text" required maxlength="36" placeholder="Run ID"><button type="submit">Open brief</button></div>
+          <p id="reopen-error" class="error" role="alert" hidden></p>
+        </form>
       </section>
       <section class="panel review" id="review" aria-labelledby="review-title">
         <div class="panel-heading"><span class="step">02</span><div><h2 id="review-title">Your review brief</h2><p>Source-backed context, ready for a human handoff.</p></div></div>

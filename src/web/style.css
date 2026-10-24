@@ -613,3 +613,14 @@ footer {
 .run-footer {
   padding:15px 19px}
 }
+.reopen-form { border-top: 1px solid var(--line); padding-top: 22px; }
+.reopen-row { display: flex; gap: 8px; }
+.reopen-row input { min-width: 0; flex: 1; }
+.reopen-row input, .feedback select { border: 1px solid var(--line); border-radius: 5px; background: #fcfdf9; color: var(--ink); padding: 10px; font: inherit; font-size: 11px; }
+.reopen-row button, .feedback button { border: 1px solid #b8c9ad; border-radius: 5px; background: #edf3e7; color: #365a3d; padding: 10px 12px; font-size: 11px; white-space: nowrap; }
+.feedback { border-top: 1px solid var(--line); margin-top: 25px; padding-top: 6px; }
+.feedback label:not(.consent) { display: block; margin: 16px 0 8px; }
+.feedback select { width: 100%; }
+.feedback textarea { min-height: 85px; }
+.feedback .consent { margin: 14px 0; }
+.source-link { display: inline-block; margin: 5px 0; font-size: 11px; text-decoration: underline; color: var(--green); }

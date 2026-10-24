@@ -1,0 +1,24 @@
+{
+  "date": "2026-10-24",
+  "scope": "Manual local-browser smoke with synthetic data; not an automated browser suite or a security/accessibility audit.",
+  "passed": true,
+  "checks": {
+    "policy_rejection_shows_resubmission_message": true,
+    "valid_attendance_after_rejection_has_three_citations": true,
+    "feedback_saved": true,
+    "feedback_restored_after_refresh": true,
+    "run_bookmark_restored_after_refresh": true,
+    "manual_run_id_reopens_brief": true,
+    "uppercase_run_id_accepted": true,
+    "malformed_run_id_shows_error": true,
+    "unknown_run_id_keeps_existing_brief_and_submission_available": true,
+    "source_link_matches_handbook_pdf_page_37": true,
+    "mobile_viewport_width": 390,
+    "mobile_document_width": 375,
+    "mobile_horizontal_overflow": false,
+    "feedback_form_instances": 1,
+    "unexpected_console_errors": 0
+  },
+  "preview": "outputs/feedback-preview.png",
+  "limits": ["The intentional rejected requests produced expected HTTP 403/404 responses.", "The PDF byte-range endpoint was verified through HTTP tests; native PDF-viewer page navigation was not audited.", "Browser network interruption, cross-browser behavior and a full accessibility audit remain untested."]
+}

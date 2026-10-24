@@ -10,6 +10,10 @@ from uuid import uuid4
 class QueueFull(RuntimeError):
     pass
 
+
+class FeedbackUnavailable(ValueError):
+    pass
+
 class JobStore:
     def __init__(self, path, clock=time.time):
         self.path = Path(path)
@@ -42,6 +46,10 @@ class JobStore:
                     errors_json TEXT NOT NULL
                 );
                 CREATE TABLE IF NOT EXISTS workers (worker_id TEXT PRIMARY KEY, last_seen REAL NOT NULL);
+                CREATE TABLE IF NOT EXISTS feedback (
+                    run_id TEXT PRIMARY KEY REFERENCES jobs(run_id), rating TEXT NOT NULL,
+                    category TEXT NOT NULL, comment TEXT NOT NULL, updated_at REAL NOT NULL
+                );
             ''')
 
     def submit(self, petition, mode, correlation_id, capacity=100):
@@ -126,3 +134,52 @@ class JobStore:
             counts = {r['status']: r['n'] for r in con.execute('SELECT status,COUNT(*) AS n FROM jobs GROUP BY status')}
             workers = con.execute('SELECT COUNT(*) FROM workers WHERE last_seen>?', (self.clock() - 15,)).fetchone()[0]
         return {'database': 'ok', 'jobs': counts, 'active_workers': workers}
+
+    def save_feedback(self, run_id, rating, category, comment):
+        with self.connection() as con:
+            con.execute('BEGIN IMMEDIATE')
+            try:
+                row = con.execute('SELECT status FROM jobs WHERE run_id=?', (run_id,)).fetchone()
+                if row is None:
+                    raise KeyError(run_id)
+                if row['status'] != 'SUCCEEDED':
+                    raise FeedbackUnavailable('Feedback requires a completed run')
+                con.execute('INSERT INTO feedback VALUES(?,?,?,?,?) ON CONFLICT(run_id) DO UPDATE SET rating=excluded.rating,category=excluded.category,comment=excluded.comment,updated_at=excluded.updated_at',
+                            (run_id, rating, category, comment, self.clock()))
+                con.commit()
+            except BaseException:
+                con.rollback()
+                raise
+        return self.get_feedback(run_id)
+
+    def get_feedback(self, run_id):
+        with self.connection() as con:
+            row = con.execute('SELECT * FROM feedback WHERE run_id=?', (run_id,)).fetchone()
+        return dict(row) if row else None
+
+    def quality_samples(self, limit=20):
+        """Prioritize failures/escalations/negative feedback, then stable hash sample.
+
+        Return metadata only; never raw petitions, quotes or free-text comments.
+        """
+        with self.connection() as con:
+            rows = con.execute("SELECT j.run_id,j.status,j.mode,j.created_at,j.result_json,f.rating,f.category FROM jobs j LEFT JOIN feedback f ON j.run_id=f.run_id WHERE j.status IN ('SUCCEEDED','FAILED')").fetchall()
+        samples = []
+        for row in rows:
+            result = json.loads(row['result_json']) if row['result_json'] else {}
+            reasons = []
+            if row['status'] == 'FAILED':
+                reasons.append('workflow_failed')
+            if result.get('status') == 'ESCALATE':
+                reasons.append('escalated')
+            if row['rating'] == 'needs_review':
+                reasons.append('negative_feedback')
+            if result.get('safety', {}).get('output') == 'blocked':
+                reasons.append('output_blocked')
+            bucket = int(hashlib.sha256(row['run_id'].encode()).hexdigest()[:8], 16)
+            if reasons or bucket % 10 == 0:
+                samples.append(dict(run_id=row['run_id'], status=row['status'], mode=row['mode'],
+                                    triage_status=result.get('status'), rating=row['rating'], category=row['category'],
+                                    reasons=reasons or ['stable_10_percent_sample'], created_at=row['created_at']))
+        samples.sort(key=lambda item: (not any(reason != 'stable_10_percent_sample' for reason in item['reasons']), -item['created_at'], item['run_id']))
+        return samples[:limit]

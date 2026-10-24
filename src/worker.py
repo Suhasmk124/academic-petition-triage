@@ -45,7 +45,9 @@ class Worker:
         try:
             # Validate again at the worker boundary before calling even an injected runner.
             request = PetitionRequest(petition=job['petition'])
-            result = self.runner(request.petition, job['mode'])
+            from safety import check_input, guarded_result
+            check_input(request.petition)
+            result = guarded_result(self.runner(request.petition, job['mode']), request.petition)
             accepted = self.store.finish(job['run_id'], job['lease_token'], result=result)
             event.update(status='SUCCEEDED' if accepted else 'LEASE_LOST')
         except Exception as exc:

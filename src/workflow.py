@@ -72,6 +72,8 @@ app = builder.compile()
 def run_petition(petition):
     # Invalid input never reaches the graph through this entry point; API validation runs before queueing.
     request = PetitionRequest(petition=petition)
+    from safety import check_input
+    check_input(request.petition)
     return app.invoke({'petition': request.petition, 'searches': 0, 'status': 'STARTED'},
                       config={'recursion_limit': 10})
 

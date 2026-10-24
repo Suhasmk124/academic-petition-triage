@@ -18,6 +18,8 @@ def main():
     unit = unittest.TextTestRunner(verbosity=1).run(suite)
     if not unit.wasSuccessful():
         raise SystemExit(1)
+    from check_safety import main as safety_checks
+    safety_report = safety_checks()
     from test_retrieval import main as retrieval_checks
     retrieval_checks()
     from workflow import run_petition
@@ -51,6 +53,7 @@ def main():
                   live_workflows=results, hosted_orchestration_implemented=True, live_hosted_validation=False,
                   semantic_entailment_verified=False,
                   fixed_scenarios=evaluation_report['scenarios'] if evaluation_report else None,
+                  safety_rule_cases=safety_report['cases'],
                   fixed_workflow_runs=evaluation_report['workflow_runs'] if evaluation_report else None,
                   scope='Local regression and extractive evaluation only; hosted semantic quality and prompt A/B remain unvalidated.')
     (ROOT / 'evaluations/project_checks.json').write_text(json.dumps(report, indent=2), encoding='utf-8')

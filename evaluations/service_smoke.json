@@ -8,12 +8,17 @@
     "RUNNING",
     "SUCCEEDED"
   ],
-  "submit_seconds": 0.797,
+  "submit_seconds": 0.718,
   "cited_findings": 3,
   "invalid_status": 422,
   "invalid_request_started_workflow": false,
   "unsupported_triage": "ESCALATE",
   "result_survived_api_restart": true,
   "billable_model_requests": 0,
+  "safety_input_blocked_before_queue": true,
+  "output_guard_passed": true,
+  "feedback_persisted_after_restart": true,
+  "quality_sampling_includes_negative_feedback": true,
+  "handbook_pdf_served": true,
   "scope": "One local functional HTTP/worker smoke test, not a throughput benchmark or SLO measurement."
 }

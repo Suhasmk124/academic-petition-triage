@@ -26,6 +26,8 @@ The local service now supports asynchronous submission, run-ID polling, persiste
 
 The petition portal at http://127.0.0.1:8000/ now provides a responsive submission form, processing progress, full clause quotations, source details and supporting-record checklists. `/docs` remains the technical API reference. The portal has no external asset dependencies. See docs/portal_and_evaluation.md for startup commands and scope.
 
+The next local stage adds versioned input rules, a fail-closed worker output/source gate, persistent review feedback, metadata-only quality sampling, source PDF links and run recovery after refresh. Rule-based injection/abuse checks are limited and can miss novel attacks; this is not complete security protection. See docs/safety_feedback_stage.md, docs/runbook.md and docs/incidents.md for behavior, verification and remaining requirements.
+
 ## PowerShell commands
 
 Use the existing Python 3.11 virtual environment. No package reinstall is required for the current project.
@@ -54,6 +56,6 @@ This chat now works directly in C:\Sauce\academic-petition-triage. The active wo
 
 ## Remaining instructor requirements
 
-Live validation and evaluation of the hosted roles and their semantic entailment judgments; evidence-based recommendations beyond referral; service authentication and distributed queue hardening; prompt A/B evaluation and broader semantic quality metrics; injection and output defenses; end-to-end reliability hardening; token/cost attribution; feedback; tracing, metrics and dashboards; Docker Compose and worker scaling; separate stub model service and Locust/SLO measurements; caching/rate limiting; runbooks and incident log.
+Live validation and evaluation of the hosted roles and their semantic entailment judgments; evidence-based recommendations beyond referral; service authentication and distributed queue hardening; prompt A/B evaluation and broader semantic quality metrics; broader injection/toxicity defenses and security evaluation; end-to-end reliability hardening; token/cost attribution; distributed tracing, metrics and dashboards; Docker Compose and worker scaling; separate stub model service and Locust/SLO measurements; caching/rate limiting. Local feedback/sampling, two failure-mode runbooks and the observed semantic-verification incident are now documented/implemented; container operations remain planned.
 
 Configuration still contains the prototype's embedding-model name; the environment-based configuration requirement is not complete. Use synthetic petitions only. Do not commit student records, credentials, virtual environments or generated databases.
