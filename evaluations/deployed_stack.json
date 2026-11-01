@@ -4,20 +4,20 @@
   "checks": [
     {
       "position": "REFER_TO_COMMITTEE",
-      "run_id": "4b7fc9a4-ca7f-4dcb-97ef-8b59458ffd3c",
-      "trace_id": "a86e960c06e69f2f39993d3814d2afdc",
+      "run_id": "3bf01c68-3149-4cf2-a40e-8378e1c8d5af",
+      "trace_id": "276e484b5c3a801b4dc290f7915c2de8",
       "cache_hit": false
     },
     {
       "position": "GRANT_UNDER_PROVISION",
-      "run_id": "c908691f-160a-4128-bb0f-b39391976cdc",
-      "trace_id": "0e9f5b38647fbb71353b49858c563e9b",
+      "run_id": "16b48c51-4f5c-4814-b059-f281448fd7ad",
+      "trace_id": "48ba798ccc9dfcd394a20802b1086c42",
       "cache_hit": true
     },
     {
       "position": "REJECT_UNDER_PROVISION",
-      "run_id": "b6d82909-318e-4684-bf96-9aeee22ea544",
-      "trace_id": "fc5877ae180b3ce602465a4f39bfd70a",
+      "run_id": "5fc200d1-ab2c-406c-a8b1-0ab1c68c2e44",
+      "trace_id": "934a30e74958465d3a17a123bd75f26a",
       "cache_hit": true
     }
   ],
@@ -26,6 +26,7 @@
   "feedback_saved": true,
   "quality_sampled": true,
   "pdf_verified": true,
+  "exports_verified": true,
   "observability": {
     "jaeger_trace_found": true,
     "span_names": [

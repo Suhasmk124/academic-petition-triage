@@ -1,0 +1,9 @@
+# Officer handoff exports and conflicting-fact safeguards
+
+Completed runs expose authenticated GET `/runs/{run_id}/export?format=json` and `?format=html`. The portal provides both downloads. HTML can be opened locally and printed or saved as PDF using the browser's print dialog; the application does not add a server-side PDF engine.
+
+Packets include a versioned contract, run/correlation/trace references, conditional position, exact quotations, document edition and verified page metadata, and missing-record checklist. They omit raw petition text, queue lease tokens and private configuration. Every packet states that facts are unverified and an officer decides. HTML values are escaped, resources/scripts are blocked by CSP, and downloads use no-store caching. Pending runs return409, missing runs404, unsupported formats422. Failed completed runs can be exported for investigation without fabricating findings. Exports are snapshots, not signed approvals or source revalidation against a subsequently changed handbook.
+
+Safety fixes: multiple percentages or invalid percentage values now force referral rather than allowing structured attendance to bypass a conflict. Medical wording paired with structured medical_absence=false also forces referral. This is deliberately conservative: even negated/ambiguous medical wording may need human assessment. Numeric overflow is excluded from entity output so malformed percentages cannot emit non-standard JSON Infinity.
+
+Tests cover authorization, finished/pending/missing runs, download headers, HTML escaping, private-field omission, ambiguous/invalid attendance, medical conflicts and oversized numeric input. Routine verification uses simulation and no hosted calls. The changes do not implement individual officer accounts, digital signatures, multi-host queues or general semantic entailment.

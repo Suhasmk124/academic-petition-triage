@@ -1,6 +1,6 @@
 {
   "service_http_smoke_passed": true,
-  "unit_tests": 100,
+  "unit_tests": 105,
   "unit_passed": true,
   "retrieval_checks": 11,
   "live_workflows": [

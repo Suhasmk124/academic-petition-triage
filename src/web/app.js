@@ -102,6 +102,13 @@ function renderResult(result) {
     brief.missing_evidence.forEach(item => list.append(element('li', item))); root.append(list);
   }
   if (result.safety?.output === 'blocked') root.append(element('p', 'The final source or safety check failed. The proposed output was withheld for officer review.', 'error'));
+  const downloads=element('p',undefined,'field-hint');
+  for (const [format,label] of [['html','Download printable officer brief'],['json','Download audit JSON']]) {
+    const link=element('a',label,'source-link');
+    link.href=`/runs/${activeRun}/export?format=${format}`; link.download='';
+    downloads.append(link,document.createTextNode('  '));
+  }
+  root.append(downloads);
   renderFeedback(root, activeRun);
   const transparency=element('details',undefined,'transparency'); transparency.append(element('summary','Run transparency'));
   const inputTokens=(result.usage||[]).reduce((sum,item)=>sum+(item.input_tokens||0),0);

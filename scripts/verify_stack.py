@@ -20,7 +20,7 @@ def main():
         assert httpx.get(args.url+'/quality-samples').status_code==401
         assert client.get('/ready').status_code==200
         checks=[]; trace_id=None
-        petition=f'Synthetic verification {uuid4().hex}: medical attendance condonation requirements.'
+        petition=f'Synthetic verification {uuid4().hex}: attendance requirements and applicable provisions.'
         for facts,expected in [({},'REFER_TO_COMMITTEE'),({'attendance_percent':85},'GRANT_UNDER_PROVISION'),({'attendance_percent':70,'medical_absence':False,'exception_requested':False},'REJECT_UNDER_PROVISION')]:
             response=client.post('/petitions',json={'petition':petition,'synthetic':True,'facts':facts})
             assert response.status_code==202,response.status_code
@@ -44,6 +44,14 @@ def main():
         assert any(row['run_id']==run['run_id'] for row in client.get('/quality-samples').json()['samples'])
         assert 'triage_agent_runs_total' in client.get('/metrics').text
         pdf=client.get('/handbook',headers={'Range':'bytes=0-9'}); assert pdf.status_code==206 and pdf.content.startswith(b'%PDF')
+        export=client.get(f"/runs/{run['run_id']}/export")
+        assert export.status_code==200 and export.json()['schema_version']=='review-packet-v1'
+        assert export.json()['run']['run_id']==run['run_id']
+        assert export.json()['final_decision_made'] is False
+        printable=client.get(f"/runs/{run['run_id']}/export?format=html")
+        assert printable.status_code==200 and '8.1(i)' in printable.text
+        assert 'attachment;' in printable.headers['content-disposition']
+        assert httpx.get(args.url+f"/runs/{run['run_id']}/export").status_code==401
         observability={}
         if args.observability:
             deadline=time.monotonic()+30
@@ -61,7 +69,7 @@ def main():
             assert httpx.get('http://127.0.0.1:3000/api/health',timeout=5).json()['database']=='ok'
             observability=dict(jaeger_trace_found=True,span_names=sorted(names),prometheus_scraping=True,grafana_database='ok')
         report=dict(passed=True,url=args.url,checks=checks,invalid_quarantined=True,injection_blocked=True,
-                    feedback_saved=True,quality_sampled=True,pdf_verified=True,observability=observability,
+                    feedback_saved=True,quality_sampled=True,pdf_verified=True,exports_verified=True,observability=observability,
                     scope='Deployed functional acceptance; performance is measured separately by benchmark.py.')
         (ROOT/'evaluations/deployed_stack.json').write_text(json.dumps(report,indent=2),encoding='utf-8')
         print('PASS: deployed authentication, all three conditional positions, citations, quarantine, feedback and metrics.')

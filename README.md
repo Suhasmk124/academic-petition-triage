@@ -25,6 +25,7 @@ The starter generates secrets in a disposable container if the existing project 
 - Idempotent preview/apply ingestion and incremental re-embedding, manifest, freshness/count/timing reports and acknowledgment of changed source PDFs.
 - Canonical source/quotation checking and complete-statement identity gate. This establishes extractive fidelity, not general semantic entailment. Finite input injection/abuse rules and output filters can miss novel attacks.
 - Responsive portal with progress, recovery, source PDF links, full citations, optional fictional facts, feedback, quality sampling and run transparency.
+- Authenticated printable officer handoff and versioned audit-JSON downloads for completed runs, with exact source metadata and no raw petition/queue internals. See [officer exports and conflict safeguards](docs/officer_exports.md).
 - Workspace-key authentication, signed browser sessions, shared Redis rate limits and versioned TTL cache with output revalidation.
 - Separate warmed simulated model service, bounded retries/backoff, circuit breaker, isolated deadline and durable queue recovery.
 - Compose indexer/API/three workers/stub/Redis/Jaeger/Prometheus/Grafana, health checks, volumes, non-root application and loopback host ports.
@@ -57,7 +58,7 @@ SQLite worker replication is supported on one Docker host; multi-host SQLite ope
 
 ## Verification status
 
-Post-restart checks passed locally and inside Docker: 100 unit tests, 11 retrieval checks, 22 safety cases, 22 source-meaning challenges, 30 scenarios/60 local workflow runs and real HTTP/worker/restart integration.
+Latest full container checks passed: 105 unit tests, 11 retrieval checks, 22 safety cases, 22 source-meaning challenges, 30 scenarios/60 local workflow runs and real HTTP/worker/restart integration.
 
 Fresh Docker startup/index initialization, linked Jaeger spans, Prometheus scraping, the Grafana dashboard, authentication, all three conditional positions, quarantine, feedback, PDF access, real stub outage/circuit/recovery and rate limiting passed. An unchanged index run re-embedded zero of 509 records. Browser submission and saved-run recovery passed with no console errors. See the reports in `evaluations/` and [performance measurements](docs/performance.md).
 

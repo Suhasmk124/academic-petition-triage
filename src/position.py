@@ -17,9 +17,12 @@ def position(petition, facts, result):
     citations = {item['citation']['clause_id']:item['evidence_id'] for item in brief.get('claims',brief.get('findings',[]))}
     facts = PetitionFacts.model_validate(facts or {})
     from entities import extract_entities
-    stated=extract_entities(petition)['stated_attendance_percent']
-    if stated is not None and facts.attendance_percent is not None and stated!=facts.attendance_percent:
-        return dict(recommendation='REFER_TO_COMMITTEE',reasons=['The petition and structured attendance figures conflict. An officer must establish the correct record.'],
+    entities=extract_entities(petition)
+    stated=entities['stated_attendance_percent']
+    ambiguous=entities['attendance_figures_ambiguous']
+    medical_conflict=entities['medical_reason_stated'] and facts.medical_absence is False
+    if ambiguous or medical_conflict or (stated is not None and facts.attendance_percent is not None and stated!=facts.attendance_percent):
+        return dict(recommendation='REFER_TO_COMMITTEE',reasons=['The petition contains ambiguous or conflicting attendance/medical information. An officer must establish the correct records and exceptions.'],
                     evidence_ids=[],conditional=True,facts_verified=False,human_review_required=True,final_decision_made=False)
     kind = classify(petition)
     if result.get('status')=='REVIEW_REQUIRED':

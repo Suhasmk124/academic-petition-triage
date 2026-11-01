@@ -171,6 +171,20 @@ def create_app(settings=None, store=None):
             raise HTTPException(status_code=404, detail='Run not found')
         return result
 
+    @app.get('/runs/{run_id}/export')
+    async def export_run(run_id: UUID, format: str = Query(default='json',pattern='^(json|html)$')):
+        run = await asyncio.to_thread(store.get,str(run_id))
+        if run is None:
+            raise HTTPException(404,'Run not found')
+        if run['status'] not in ('SUCCEEDED','FAILED'):
+            raise HTTPException(409,'A review packet requires a completed run')
+        from review_export import review_packet, review_html
+        packet=review_packet(run)
+        content=review_html(packet) if format=='html' else json.dumps(packet,ensure_ascii=False,indent=2)
+        return Response(content,media_type='text/html' if format=='html' else 'application/json',headers={
+            'Content-Disposition':f'attachment; filename="review-{run_id}.{format}"',
+            'Cache-Control':'no-store','Content-Security-Policy':"default-src 'none'; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'"})
+
     @app.get('/runs/{run_id}/feedback')
     async def get_feedback(run_id: UUID):
         if await asyncio.to_thread(store.get, str(run_id)) is None:
