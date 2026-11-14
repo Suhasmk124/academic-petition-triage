@@ -45,6 +45,17 @@ class JobStore:
                     body BLOB NOT NULL, body_sha256 TEXT NOT NULL, truncated INTEGER NOT NULL,
                     errors_json TEXT NOT NULL
                 );
+                CREATE TABLE IF NOT EXISTS workspace_accounts (
+                    username TEXT PRIMARY KEY, role TEXT NOT NULL, password_hash TEXT NOT NULL
+                );
+                CREATE TABLE IF NOT EXISTS officer_reviews (
+                    run_id TEXT PRIMARY KEY REFERENCES jobs(run_id), reviewer TEXT NOT NULL,
+                    outcome TEXT NOT NULL, note TEXT NOT NULL, updated_at REAL NOT NULL
+                );
+                CREATE TABLE IF NOT EXISTS attachments (
+                    run_id TEXT PRIMARY KEY REFERENCES jobs(run_id),
+                    extension TEXT NOT NULL, content BLOB NOT NULL
+                );
                 CREATE TABLE IF NOT EXISTS workers (worker_id TEXT PRIMARY KEY, last_seen REAL NOT NULL);
                 CREATE TABLE IF NOT EXISTS feedback (
                     run_id TEXT PRIMARY KEY REFERENCES jobs(run_id), rating TEXT NOT NULL,
@@ -54,11 +65,11 @@ class JobStore:
                 CREATE TABLE IF NOT EXISTS limits (key TEXT PRIMARY KEY, count INTEGER NOT NULL, expires_at REAL NOT NULL);
             ''')
             columns = {row['name'] for row in con.execute('PRAGMA table_info(jobs)')}
-            for name in ('traceparent', 'cache_key', 'facts_json'):
+            for name in ('traceparent', 'cache_key', 'facts_json', 'private_record', 'owner'):
                 if name not in columns:
                     con.execute(f'ALTER TABLE jobs ADD COLUMN {name} TEXT')
 
-    def submit(self, petition, mode, correlation_id, capacity=100, traceparent=None, cache_key=None, facts=None):
+    def submit(self, petition, mode, correlation_id, capacity=100, traceparent=None, cache_key=None, facts=None, private_record=False, attachment=None, owner=None):
         now, run_id = self.clock(), str(uuid4())
         with self.connection() as con:
             con.execute('BEGIN IMMEDIATE')
@@ -68,11 +79,61 @@ class JobStore:
                     raise QueueFull('Queue capacity reached')
                 con.execute('INSERT INTO jobs(run_id,petition,mode,correlation_id,status,created_at,updated_at,traceparent,cache_key,facts_json) VALUES(?,?,?,?,?,?,?,?,?,?)',
                             (run_id, petition, mode, correlation_id, 'QUEUED', now, now, traceparent, cache_key, json.dumps(facts) if facts else None))
+                if private_record:
+                    con.execute("UPDATE jobs SET private_record='1',owner=? WHERE run_id=?", (owner,run_id))
+                if attachment is not None:
+                    con.execute('INSERT INTO attachments VALUES(?,?,?)', (run_id, *attachment))
                 con.commit()
             except BaseException:
                 con.rollback()
                 raise
         return run_id
+
+    def create_account(self, username, role, password_hash):
+        with self.connection() as con:
+            return con.execute('INSERT OR IGNORE INTO workspace_accounts VALUES(?,?,?)',
+                               (username,role,password_hash)).rowcount==1
+
+    def account(self, username):
+        with self.connection() as con:
+            row=con.execute('SELECT role,password_hash FROM workspace_accounts WHERE username=?',(username,)).fetchone()
+        return dict(row) if row else None
+
+    def owns_run(self, run_id, username):
+        with self.connection() as con:
+            return con.execute('SELECT 1 FROM jobs WHERE run_id=? AND owner=?',(run_id,username)).fetchone() is not None
+
+    def private_cases(self, owner=None):
+        scope="j.private_record='1'" if owner is None else "j.private_record='1' AND j.owner=?"
+        with self.connection() as con:
+            rows=con.execute(
+                'SELECT j.run_id,j.status,j.created_at,r.outcome FROM jobs j LEFT JOIN officer_reviews r ON j.run_id=r.run_id WHERE '
+                + scope + ' ORDER BY (r.run_id IS NOT NULL), j.created_at DESC LIMIT 100',
+                () if owner is None else (owner,)).fetchall()
+        return [dict(row) for row in rows]
+
+    def officer_review(self, run_id):
+        with self.connection() as con:
+            row=con.execute('SELECT reviewer,outcome,note,updated_at FROM officer_reviews WHERE run_id=?',(run_id,)).fetchone()
+        return dict(row) if row else None
+
+    def record_officer_review(self, run_id, reviewer, outcome, note):
+        with self.connection() as con:
+            return con.execute(
+                """INSERT INTO officer_reviews SELECT run_id,?,?,?,? FROM jobs
+                   WHERE run_id=? AND private_record='1' AND status IN ('SUCCEEDED','FAILED')
+                   ON CONFLICT(run_id) DO UPDATE SET reviewer=excluded.reviewer,outcome=excluded.outcome,
+                   note=excluded.note,updated_at=excluded.updated_at""",
+                (reviewer,outcome,note,self.clock(),run_id)).rowcount==1
+
+    def attachment(self, run_id):
+        with self.connection() as con:
+            row = con.execute('SELECT extension,content FROM attachments WHERE run_id=?',(run_id,)).fetchone()
+        return tuple(row) if row else None
+
+    def delete_attachment(self, run_id):
+        with self.connection() as con:
+            return con.execute('DELETE FROM attachments WHERE run_id=?',(run_id,)).rowcount == 1
 
     def quarantine(self, body, correlation_id, errors, truncated=False):
         identifier = str(uuid4())
@@ -82,9 +143,9 @@ class JobStore:
                          int(truncated), json.dumps(errors)))
         return identifier
 
-    def get(self, run_id):
+    def get(self, run_id, include_private_text=False):
         with self.connection() as con:
-            row = con.execute('SELECT * FROM jobs WHERE run_id=?', (run_id,)).fetchone()
+            row = con.execute('SELECT jobs.*, EXISTS(SELECT 1 FROM attachments WHERE attachments.run_id=jobs.run_id) AS attachment_available FROM jobs WHERE run_id=?', (run_id,)).fetchone()
         if row is None:
             return None
         result = dict(row)
@@ -92,8 +153,13 @@ class JobStore:
         error_json = result.pop('error_json')
         result['result'] = json.loads(result_json) if result_json is not None else None
         result['error'] = json.loads(error_json) if error_json is not None else None
-        # Internal petition and lease data are never returned by status polling.
-        for key in ('petition', 'lease_token', 'lease_until', 'traceparent', 'cache_key', 'facts_json'):
+        if include_private_text and result['private_record']:
+            result['private_petition'] = result['petition']
+            facts=json.loads(result['facts_json'] or '{}')
+            result['attendance_percent']=facts.get('attendance_percent')
+            result['officer_review']=self.officer_review(run_id)
+        # Other internal petition and lease fields are never returned.
+        for key in ('petition', 'lease_token', 'lease_until', 'traceparent', 'cache_key', 'facts_json', 'private_record','owner'):
             result.pop(key)
         result['triage_status'] = result['result'].get('status') if result['result'] else None
         return result

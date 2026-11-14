@@ -22,7 +22,16 @@ def execute(payload):
         result = run_stub(petition, payload.get('delay', .15))
     elif mode == 'hosted':
         from agent_workflow import run_hosted
-        result = run_hosted(petition)
+        if payload.get('private_record'):
+            from assessment import classify
+            from supporting_documents import hosted_policy_query
+            query = hosted_policy_query(classify(petition))
+            if query is None:
+                from workflow import run_petition
+                return run_petition(petition) | {'mode':'DETERMINISTIC','billable_model_requests':0}
+            result = run_hosted(query)
+        else:
+            result = run_hosted(petition)
     else:
         from workflow import run_petition
         result = run_petition(petition) | {'mode':'DETERMINISTIC','billable_model_requests':0}

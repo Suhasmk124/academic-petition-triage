@@ -24,13 +24,13 @@ class Worker:
         self.operations = Operations(store)
         self.stub_client = None
 
-    def execute(self, petition, mode):
+    def execute(self, petition, mode, private_record=False):
         execution_started = time.monotonic()
         request = PetitionRequest(petition=petition)
         if mode not in ('stub','deterministic','hosted') or (mode=='hosted' and not self.settings.allow_hosted):
             raise ValueError('Execution mode is not enabled')
         failure = None
-        if mode == 'stub' and os.getenv('STUB_SERVICE_URL'):
+        if mode == 'stub' and (not private_record or self.settings.role_demo) and os.getenv('STUB_SERVICE_URL'):
             from resilience import StubClient, ServiceUnavailable
             self.stub_client = self.stub_client or StubClient(os.environ['STUB_SERVICE_URL'], timeout=min(60,self.settings.job_timeout/3))
             try:
@@ -41,7 +41,7 @@ class Worker:
         root = Path(__file__).resolve().parents[1]
         with tempfile.TemporaryDirectory(prefix='job-',dir=self.store.path.parent) as directory:
             output = Path(directory)/'result.json'
-            payload = dict(petition=request.petition,mode=mode,delay=self.settings.stub_delay_seconds,output=str(output))
+            payload = dict(petition=request.petition,mode=mode,delay=self.settings.stub_delay_seconds,output=str(output),private_record=private_record)
             remaining = self.settings.job_timeout-(time.monotonic()-execution_started)
             if remaining<=0: raise subprocess.TimeoutExpired('job',self.settings.job_timeout)
             from telemetry import carrier
@@ -76,7 +76,10 @@ class Worker:
             check_input(request.petition)
             with span('worker.job',parent=job.get('traceparent'),run_id=job['run_id'],correlation_id=job['correlation_id']) as current:
                 cached = self.operations.cached(job.get('cache_key'))
-                raw = cached if cached else self.runner(request.petition, job['mode'])
+                if job.get('private_record'):
+                    raw = self.execute(request.petition,job['mode'],private_record=True)
+                else:
+                    raw = cached if cached else self.runner(request.petition, job['mode'])
                 result = guarded_result(raw, request.petition)
                 result['trace_id'] = format(current.get_span_context().trace_id,'032x')
                 result['cache'] = {'hit':bool(cached),'avoided_model_calls':sum(metric['model_calls'] for metric in raw.get('metrics',[])) if cached else 0}
@@ -85,7 +88,13 @@ class Worker:
                 result['reliability'] = {'fallback':raw.get('service_fallback') in ('CIRCUIT_OPEN','STUB_UNAVAILABLE'),
                                          'reason':raw.get('service_fallback') if raw.get('service_fallback') in ('CIRCUIT_OPEN','STUB_UNAVAILABLE') else None,
                                          'job_attempt':job['attempts']}
-                if not cached: self.operations.cache(job.get('cache_key'),result,int(os.getenv('TRIAGE_CACHE_TTL','0')))
+                if job['mode']=='hosted':
+                    result['provider_request_attempts'] = len(raw.get('model_usage', []))
+                if raw.get('hosted_failure'):
+                    from hosted_diagnostics import hosted_failure_details
+                    result['reliability'].update(fallback=True,reason='HOSTED_MODEL_UNAVAILABLE',
+                                                 hosted_failure=hosted_failure_details(raw))
+                if not cached and not job.get('private_record'): self.operations.cache(job.get('cache_key'),result,int(os.getenv('TRIAGE_CACHE_TTL','0')))
                 from position import position
                 from entities import extract_entities
                 result['entities'] = extract_entities(request.petition)

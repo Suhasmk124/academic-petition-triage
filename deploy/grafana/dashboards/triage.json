@@ -11,7 +11,7 @@
   "panels": [
     {
       "id": 1,
-      "title": "HTTP p95",
+      "title": "Workflow p95 (seconds)",
       "type": "timeseries",
       "datasource": {
         "type": "prometheus",
@@ -25,14 +25,14 @@
       },
       "targets": [
         {
-          "expr": "histogram_quantile(0.95, sum by (le) (rate(triage_http_duration_seconds_bucket[5m])))",
+          "expr": "histogram_quantile(0.95, sum by (le) (rate(triage_workflow_duration_seconds_bucket{status=\"SUCCEEDED\"}[1m])))",
           "refId": "A"
         }
       ]
     },
     {
       "id": 2,
-      "title": "Queue depth",
+      "title": "Workflows completed per second",
       "type": "timeseries",
       "datasource": {
         "type": "prometheus",
@@ -46,14 +46,14 @@
       },
       "targets": [
         {
-          "expr": "triage_jobs{status=\"QUEUED\"}",
+          "expr": "sum by (status) (rate(triage_workflow_duration_seconds_count[1m]))",
           "refId": "A"
         }
       ]
     },
     {
       "id": 3,
-      "title": "Active workers",
+      "title": "Queue depth",
       "type": "timeseries",
       "datasource": {
         "type": "prometheus",
@@ -61,6 +61,27 @@
       },
       "gridPos": {
         "x": 0,
+        "y": 8,
+        "w": 12,
+        "h": 8
+      },
+      "targets": [
+        {
+          "expr": "triage_jobs{status=\"QUEUED\"}",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "title": "Active workers",
+      "type": "timeseries",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "x": 12,
         "y": 8,
         "w": 12,
         "h": 8
@@ -73,8 +94,29 @@
       ]
     },
     {
-      "id": 4,
-      "title": "Agent calls",
+      "id": 5,
+      "title": "Oldest queued petition (seconds)",
+      "type": "timeseries",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 16,
+        "w": 12,
+        "h": 8
+      },
+      "targets": [
+        {
+          "expr": "triage_oldest_queued_seconds",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "title": "Failed workflows in the last minute",
       "type": "timeseries",
       "datasource": {
         "type": "prometheus",
@@ -82,7 +124,70 @@
       },
       "gridPos": {
         "x": 12,
-        "y": 8,
+        "y": 16,
+        "w": 12,
+        "h": 8
+      },
+      "targets": [
+        {
+          "expr": "increase(triage_workflow_duration_seconds_count{status=\"FAILED\"}[1m])",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 7,
+      "title": "Submission HTTP p95 (seconds)",
+      "type": "timeseries",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 24,
+        "w": 12,
+        "h": 8
+      },
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.95, sum by (le) (rate(triage_http_duration_seconds_bucket{route=~\"/petitions(/private)?\"}[1m])))",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 8,
+      "title": "API errors per second",
+      "type": "timeseries",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 24,
+        "w": 12,
+        "h": 8
+      },
+      "targets": [
+        {
+          "expr": "sum by (status) (rate(triage_http_requests_total{status=~\"[45]..\"}[1m]))",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 9,
+      "title": "Agent calls",
+      "type": "timeseries",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 32,
         "w": 12,
         "h": 8
       },
@@ -94,7 +199,7 @@
       ]
     },
     {
-      "id": 5,
+      "id": 10,
       "title": "Agent time",
       "type": "timeseries",
       "datasource": {
@@ -102,8 +207,8 @@
         "uid": "prometheus"
       },
       "gridPos": {
-        "x": 0,
-        "y": 16,
+        "x": 12,
+        "y": 32,
         "w": 12,
         "h": 8
       },
@@ -115,7 +220,7 @@
       ]
     },
     {
-      "id": 6,
+      "id": 11,
       "title": "Tool calls",
       "type": "timeseries",
       "datasource": {
@@ -123,8 +228,8 @@
         "uid": "prometheus"
       },
       "gridPos": {
-        "x": 12,
-        "y": 16,
+        "x": 0,
+        "y": 40,
         "w": 12,
         "h": 8
       },
@@ -136,7 +241,7 @@
       ]
     },
     {
-      "id": 7,
+      "id": 12,
       "title": "Model retries",
       "type": "timeseries",
       "datasource": {
@@ -144,8 +249,8 @@
         "uid": "prometheus"
       },
       "gridPos": {
-        "x": 0,
-        "y": 24,
+        "x": 12,
+        "y": 40,
         "w": 12,
         "h": 8
       },
@@ -157,7 +262,7 @@
       ]
     },
     {
-      "id": 8,
+      "id": 13,
       "title": "API uptime",
       "type": "timeseries",
       "datasource": {
@@ -165,8 +270,8 @@
         "uid": "prometheus"
       },
       "gridPos": {
-        "x": 12,
-        "y": 24,
+        "x": 0,
+        "y": 48,
         "w": 12,
         "h": 8
       },
@@ -178,7 +283,7 @@
       ]
     },
     {
-      "id": 9,
+      "id": 14,
       "title": "Tokens (reported or estimated)",
       "type": "timeseries",
       "datasource": {
@@ -186,8 +291,8 @@
         "uid": "prometheus"
       },
       "gridPos": {
-        "x": 0,
-        "y": 32,
+        "x": 12,
+        "y": 48,
         "w": 12,
         "h": 8
       },

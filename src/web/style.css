@@ -633,3 +633,13 @@ dialog input, .facts input, .facts select { display: block; width: 100%; padding
 .facts label { display: block; margin-top: 10px; }
 .transparency { border-top: 1px solid var(--line); margin-top: 20px; padding-top: 16px; font-size: 11px; overflow-wrap: anywhere; }
 .transparency p { line-height: 1.8; color: var(--muted); }
+
+.answer-card { background: #edf5f0; border: 1px solid #cbded2; border-radius: 16px 16px 16px 4px; padding: 20px; margin-bottom: 20px; }
+.answer-card h3 { margin-top: 0; }
+.answer-card .source-link { white-space: nowrap; text-decoration: underline; }
+details.finding { scroll-margin-top: 20px; }
+details.finding > summary { cursor: pointer; }
+#role-panel { margin-bottom: 24px; }
+#case-list { display: flex; flex-wrap: wrap; gap: 8px; }
+#create-account { margin-top: 20px; }
+.workspace.review-only { grid-template-columns: 1fr; }

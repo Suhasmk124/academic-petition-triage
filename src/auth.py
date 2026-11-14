@@ -8,7 +8,7 @@ from runtime_config import secret
 
 def key_matches(candidate):
     configured = secret()
-    return bool(configured and candidate and hmac.compare_digest(configured, candidate))
+    return bool(configured and candidate and hmac.compare_digest(configured.encode(), candidate.encode()))
 
 
 def session_cookie():
@@ -17,13 +17,13 @@ def session_cookie():
     return payload + '.' + signature
 
 
-def authenticated(request):
+def authenticated(request, cookie_name="triage_session"):
     if not secret():
         return True
     authorization = request.headers.get('authorization', '')
     if authorization.startswith('Bearer ') and key_matches(authorization[7:]):
         return True
-    cookie = request.cookies.get('triage_session', '')
+    cookie = request.cookies.get(cookie_name, '')
     try:
         timestamp, nonce, signature = cookie.split('.')
         age = time.time()-int(timestamp)

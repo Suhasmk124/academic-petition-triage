@@ -3,6 +3,7 @@ import asyncio
 import json
 import time
 import os
+from hmac import compare_digest
 from urllib.parse import urlsplit
 from contextlib import asynccontextmanager
 from uuid import UUID, uuid4
@@ -12,26 +13,37 @@ from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from pathlib import Path
 from pydantic import ValidationError
-from api_models import AcceptedRun, Feedback, RunView, Submission
+from api_models import AcceptedRun, Feedback, RunView, Submission, PrivateSubmission, AccountInput, OfficerReview
 from job_store import FeedbackUnavailable, JobStore, QueueFull
 from safety import PolicyViolation, check_input
 from service_config import ServiceSettings
 from operations import Operations, cache_key
 from auth import authenticated, key_matches, session_cookie
 from runtime_config import secret
+from workspace_accounts import issue_session, session_user, password_hash, verify_password
 from telemetry import HttpMetrics, span, carrier
+
+DEMO_PASSWORD = 'pass@1234'
 
 
 def create_app(settings=None, store=None):
     settings = settings or ServiceSettings.from_env()
     store = store or JobStore(settings.db_path)
+    if settings.private_records and not secret():
+        raise ValueError("Private records require a dedicated workspace key.")
 
     @asynccontextmanager
     async def lifespan(app):
         await asyncio.to_thread(store.initialize)
+        if settings.role_demo:
+            for role in ('student', 'reviewer'):
+                encoded = await asyncio.to_thread(password_hash, DEMO_PASSWORD)
+                await asyncio.to_thread(store.create_account, role, role, encoded)
         yield
 
     app = FastAPI(title='Academic Petition Triage', version='1.0.0', lifespan=lifespan)
+    cookie_name = ('triage_showcase_session' if settings.role_demo else
+                   'triage_private_session' if settings.private_records else 'triage_session')
     metrics = HttpMetrics()
     operations = Operations(store)
     web = Path(__file__).resolve().parent / 'web'
@@ -52,9 +64,31 @@ def create_app(settings=None, store=None):
         request.state.correlation_id = str(uuid4())
         started = time.monotonic()
         public = request.url.path in ('/', '/health', '/ready', '/auth/session') or request.url.path.startswith('/assets/')
-        if not public and not authenticated(request):
-            metrics.requests.labels('authentication',401).inc()
-            return JSONResponse(status_code=401, content={'error':'AUTHENTICATION_REQUIRED'})
+        if not public:
+            if settings.role_accounts:
+                key = secret()
+                authorization = request.headers.get('authorization','')
+                username = ('admin' if authorization.startswith('Bearer ') and key_matches(authorization[7:])
+                            else session_user(request.cookies.get(cookie_name,''),key))
+                account = (await asyncio.to_thread(store.account, username)
+                           if username and username != 'admin' else None)
+                if username == 'admin':
+                    request.state.identity = ('admin','admin')
+                elif account:
+                    request.state.identity = (username,account['role'])
+                else:
+                    return JSONResponse(status_code=401,content={'error':'AUTHENTICATION_REQUIRED'})
+                role = request.state.identity[1]
+                if role == 'student':
+                    segments = request.url.path.strip('/').split('/')
+                    if len(segments)>=2 and segments[0]=='runs':
+                        if not await asyncio.to_thread(store.owns_run,segments[1],username):
+                            return JSONResponse(status_code=404,content={'detail':'Run not found'})
+                    elif request.url.path not in ('/petitions/private','/workspace/me','/workspace/cases','/auth/logout','/handbook'):
+                        return JSONResponse(status_code=403,content={'detail':'Staff access required'})
+            elif not authenticated(request, cookie_name):
+                metrics.requests.labels('authentication',401).inc()
+                return JSONResponse(status_code=401, content={'error':'AUTHENTICATION_REQUIRED'})
         origin = request.headers.get('origin')
         if request.method not in ('GET','HEAD','OPTIONS') and origin and urlsplit(origin).netloc != request.url.netloc:
             metrics.requests.labels('origin',403).inc()
@@ -70,6 +104,8 @@ def create_app(settings=None, store=None):
         response.headers['X-Correlation-ID'] = request.state.correlation_id
         response.headers['X-Content-Type-Options'] = 'nosniff'
         response.headers['Referrer-Policy'] = 'no-referrer'
+        if settings.private_records:
+            response.headers['Cache-Control'] = 'no-store'
         response.headers['X-Frame-Options'] = 'DENY'
         if request.url.path == '/' or request.url.path.startswith('/assets/'):
             response.headers['Content-Security-Policy'] = "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self'; object-src 'none'; base-uri 'none'; frame-ancestors 'none'; form-action 'self'"
@@ -92,19 +128,30 @@ def create_app(settings=None, store=None):
             if len(body)>2048:
                 return JSONResponse(status_code=413, content={'error':'INVALID_REQUEST'})
         try:
-            candidate = json.loads(body).get('api_key', '')
-            valid = isinstance(candidate, str) and key_matches(candidate)
-        except (ValueError, AttributeError):
+            credentials = json.loads(body)
+            candidate = credentials.get('api_key', '')
+            username = credentials.get('username','').strip().lower() if settings.role_accounts else 'admin'
+            if settings.role_accounts and username != 'admin':
+                account = await asyncio.to_thread(store.account, username)
+                valid = bool(account and isinstance(candidate,str) and len(candidate)<=128 and
+                             await asyncio.to_thread(verify_password,candidate,account['password_hash']))
+            else:
+                valid = isinstance(candidate, str) and (
+                    compare_digest(candidate.encode(), DEMO_PASSWORD.encode()) if settings.role_demo
+                    else key_matches(candidate))
+        except (ValueError, AttributeError, TypeError):
             valid = False
         if secret() and not valid:
             return JSONResponse(status_code=401, content={'error':'AUTHENTICATION_REQUIRED'})
         response = JSONResponse({'authenticated':True})
         if secret():
-            response.set_cookie('triage_session', session_cookie(), max_age=3600, httponly=True,
+            response.set_cookie(cookie_name, issue_session(username,secret()) if settings.role_accounts else session_cookie(), max_age=3600, httponly=True,
                                 samesite='strict', secure=request.url.scheme == 'https')
         return response
 
     async def quarantine(request, body, errors, status=422, truncated=False, error='INVALID_REQUEST'):
+        if settings.private_records:
+            body = b""
         identifier = await asyncio.to_thread(store.quarantine, body, request.state.correlation_id, errors, truncated)
         return JSONResponse(status_code=status, content={'error': error, 'quarantine_id': identifier,
                             'correlation_id': request.state.correlation_id, 'details': errors,
@@ -141,32 +188,143 @@ def create_app(settings=None, store=None):
     @app.post('/petitions', response_model=AcceptedRun, status_code=202, openapi_extra={
         'requestBody': {'required': True, 'content': {'application/json': {'schema': Submission.model_json_schema()}}}})
     async def submit(request: Request):
+        if settings.role_demo:
+            identity(request, {'admin'})
+        elif settings.private_records:
+            raise HTTPException(404, 'Use the private petition endpoint in this workspace')
         submission = await validated_body(request, Submission)
         if isinstance(submission, JSONResponse):
             return submission
         rejected = await policy_gate(request, submission.petition)
         if rejected is not None:
             return rejected
+        return await enqueue(request, submission)
+
+    async def enqueue(request, submission, private=False, attachment=None):
         try:
             allowed = await asyncio.to_thread(operations.allow, request.client.host if request.client else 'local', int(os.getenv('TRIAGE_RATE_LIMIT', '0')))
         except Exception:
             return JSONResponse(status_code=503, content={'error':'RATE_LIMIT_BACKEND_UNAVAILABLE','workflow_started':False})
         if not allowed:
             return JSONResponse(status_code=429, content={'error':'RATE_LIMITED','workflow_started':False}, headers={'Retry-After':'60'})
-        fingerprint = await asyncio.to_thread(cache_key, submission.petition, settings.mode) if int(os.getenv('TRIAGE_CACHE_TTL', '0')) > 0 else None
+        fingerprint = await asyncio.to_thread(cache_key, submission.petition, settings.mode) if not private and settings.mode != 'hosted' and int(os.getenv('TRIAGE_CACHE_TTL', '0')) > 0 else None
         try:
             run_id = await asyncio.to_thread(store.submit, submission.petition, settings.mode,
                                              request.state.correlation_id, settings.queue_capacity, carrier(), fingerprint,
-                                             submission.facts.model_dump() if submission.facts else None)
+                                             submission.facts.model_dump() if submission.facts else None, private, attachment,
+                                             getattr(request.state,'identity',(None,None))[0])
         except QueueFull:
             return JSONResponse(status_code=503, headers={'Retry-After': '1'},
                                 content={'error': 'QUEUE_FULL', 'workflow_started': False})
         return AcceptedRun(run_id=run_id, mode=settings.mode, correlation_id=request.state.correlation_id,
                            poll_url=f'/runs/{run_id}')
 
+    def require_private_workspace():
+        if not settings.private_records or not secret():
+            raise HTTPException(404, 'Private records are disabled in this workspace')
+
+    def identity(request, roles=None):
+        if not settings.role_accounts:
+            raise HTTPException(404,'Role accounts are disabled')
+        user,role=request.state.identity
+        if roles is not None and role not in roles:
+            raise HTTPException(403,'Staff access required')
+        return user,role
+
+    @app.get('/workspace/me')
+    async def workspace_me(request: Request):
+        user,role=identity(request)
+        return {'username':user,'role':role}
+
+    @app.post('/auth/logout',status_code=204)
+    async def logout():
+        response=Response(status_code=204)
+        response.delete_cookie(cookie_name)
+        return response
+
+    @app.get('/workspace/cases')
+    async def workspace_cases(request: Request):
+        user,role=identity(request)
+        return await asyncio.to_thread(store.private_cases,user if role=='student' else None)
+
+    @app.post('/workspace/accounts',status_code=201)
+    async def create_account(request: Request):
+        identity(request,{'admin'})
+        if settings.role_demo:
+            raise HTTPException(403, 'This demo uses the three preset accounts')
+        payload=await validated_body(request,AccountInput)
+        if isinstance(payload,JSONResponse):
+            return payload
+        if payload.username=='admin':
+            raise HTTPException(409,'That username is reserved')
+        encoded=await asyncio.to_thread(password_hash,payload.password)
+        if not await asyncio.to_thread(store.create_account,payload.username,payload.role,encoded):
+            raise HTTPException(409,'That username already exists')
+        return {'username':payload.username,'role':payload.role}
+
+    @app.put('/runs/{run_id}/officer-review')
+    async def save_officer_review(run_id: UUID,request: Request):
+        reviewer,_=identity(request,{'admin','reviewer'})
+        payload=await validated_body(request,OfficerReview)
+        if isinstance(payload,JSONResponse):
+            return payload
+        if not await asyncio.to_thread(store.record_officer_review,str(run_id),reviewer,payload.outcome,payload.note):
+            raise HTTPException(409,'Open a completed private case before recording a review')
+        return await asyncio.to_thread(store.officer_review,str(run_id))
+
+    @app.post('/petitions/private', response_model=AcceptedRun, status_code=202)
+    async def submit_private(request: Request):
+        require_private_workspace()
+        if settings.role_accounts:
+            identity(request,{'student','admin'})
+        from supporting_documents import decode_attachment, MAX_REQUEST_BYTES
+        if request.headers.get('content-type', '').split(';')[0].strip().lower() != 'application/json':
+            raise HTTPException(415,'Expected JSON')
+        body = bytearray()
+        async for chunk in request.stream():
+            if len(body) + len(chunk) > MAX_REQUEST_BYTES:
+                raise HTTPException(413,'Attachment must be 5 MiB or smaller')
+            body.extend(chunk)
+        try:
+            submission = PrivateSubmission.model_validate_json(body)
+        except ValueError:
+            raise HTTPException(422,'Check the petition and attachment size')
+        if settings.role_demo and not submission.synthetic:
+            raise HTTPException(422, 'Confirm that this petition and attachment are fictional')
+        try:
+            check_input(submission.petition)
+        except PolicyViolation:
+            # Never save rejected private text or attachment bytes to quarantine.
+            raise HTTPException(403,'The petition requires manual review')
+        try:
+            attachment = decode_attachment(submission.attachment.content) if submission.attachment else None
+        except ValueError:
+            raise HTTPException(422,'Attach a PDF, PNG or JPEG file up to 5 MiB')
+        return await enqueue(request, submission, private=True, attachment=attachment)
+
+    @app.get('/runs/{run_id}/attachment')
+    async def download_attachment(run_id: UUID):
+        require_private_workspace()
+        item = await asyncio.to_thread(store.attachment, str(run_id))
+        if item is None:
+            raise HTTPException(404,'Attachment not found')
+        extension, content = item
+        return Response(content, media_type='application/octet-stream',headers={
+            'Content-Disposition':f'attachment; filename="supporting-document.{extension}"',
+            'Cache-Control':'no-store', 'Content-Security-Policy':"default-src 'none'; sandbox"})
+
+    @app.delete('/runs/{run_id}/attachment',status_code=204)
+    async def delete_attachment(run_id: UUID, request: Request):
+        require_private_workspace()
+        if settings.role_accounts:
+            identity(request,{'student','admin'})
+        if not await asyncio.to_thread(store.delete_attachment,str(run_id)):
+            raise HTTPException(404,'Attachment not found')
+        return Response(status_code=204,headers={'Cache-Control':'no-store'})
+
     @app.get('/runs/{run_id}', response_model=RunView)
     async def get_run(run_id: UUID):
-        result = await asyncio.to_thread(store.get, str(run_id))
+        result = await asyncio.to_thread(store.get, str(run_id), settings.private_records)
         if result is None:
             raise HTTPException(status_code=404, detail='Run not found')
         return result
@@ -215,11 +373,13 @@ def create_app(settings=None, store=None):
 
     @app.get('/health')
     async def health():
-        return {'status': 'ok', 'mode': settings.mode, **await asyncio.to_thread(store.health)}
+        return {'status': 'ok', 'mode': settings.mode, 'private_records': settings.private_records,
+                'role_accounts': settings.role_accounts, 'role_demo': settings.role_demo,
+                **await asyncio.to_thread(store.health)}
 
     @app.get('/metrics', include_in_schema=False)
     async def prometheus():
-        from prometheus_client import generate_latest, CollectorRegistry, Gauge
+        from prometheus_client import generate_latest, CollectorRegistry, Gauge, Histogram
         def durable():
             registry = CollectorRegistry()
             jobs = Gauge('triage_jobs', 'Durable job counts', ['status'], registry=registry)
@@ -233,12 +393,20 @@ def create_app(settings=None, store=None):
             calls = Gauge('triage_agent_tool_calls_total','Persisted tool calls',['agent'],registry=registry)
             retries = Gauge('triage_agent_retries_total','Persisted model transport retries',['agent'],registry=registry)
             tokens = Gauge('triage_tokens_total','Persisted reported or estimated tokens',['agent','kind'],registry=registry)
+            workflow = Histogram('triage_workflow_duration_seconds', 'Time from submission to worker completion',
+                                 ['status'], registry=registry, buckets=(.25,.5,1,2,3,5,8,10,15,30,60,120,240))
+            for status in ('SUCCEEDED', 'FAILED'):
+                workflow.labels(status)
             totals = {}
             with store.connection() as con:
                 queued = con.execute("SELECT MIN(created_at) FROM jobs WHERE status='QUEUED'").fetchone()[0]
-                rows = con.execute("SELECT result_json FROM jobs WHERE status='SUCCEEDED' AND result_json IS NOT NULL").fetchall()
+                rows = con.execute("""SELECT status, updated_at - created_at AS duration, result_json
+                                      FROM jobs WHERE status IN ('SUCCEEDED','FAILED')""").fetchall()
             age.set(max(0,store.clock()-queued) if queued else 0)
             for row in rows:
+                workflow.labels(row['status']).observe(max(0, row['duration']))
+                if row['status'] != 'SUCCEEDED' or not row['result_json']:
+                    continue
                 result = json.loads(row['result_json'])
                 for metric in result.get('metrics',[]):
                     agent = metric['agent']; item = totals.setdefault(agent, {'ok':0,'failed':0,'duration':0,'tools':0,'input':0,'output':0,'retries':0})

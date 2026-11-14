@@ -22,6 +22,13 @@ def review_html(packet):
                         '</blockquote><p>'+text(cite.get('title',cite.get('source','Handbook')))+' - '+text(cite.get('version',''))+
                         ('; printed page '+text(cite.get('printed_page')) if cite.get('printed_page_verified') else '')+
                         '</p><p>'+text(cite.get('source_note',''))+'</p><p>Evidence: '+text(item.get('evidence_id',''))+'</p></article>')
+    verdicts=result.get('hosted_review',[])
+    live_review=('<h2>Live agent results</h2><ul>'+''.join(
+        '<li>'+text(v['clause_id'])+' - '+('Verifier supported this quotation' if v['verifier_supported'] else 'Verifier did not support this quotation')+'</li>'
+        for v in verdicts)+'</ul>') if verdicts else ''
+    failure=result.get('reliability',{}).get('hosted_failure')
+    if failure:
+        live_review += '<h2>Local fallback</h2><p>'+text(failure.get('role','Hosted workflow'))+': '+text(failure['message'])+'</p>'
     missing=''.join('<li>'+text(item)+'</li>' for item in brief.get('missing_evidence',[]))
     position=result.get('position',{})
     reasons=''.join('<li>'+text(item)+'</li>' for item in position.get('reasons',[]))
@@ -32,7 +39,7 @@ def review_html(packet):
             '<h1>Academic officer review brief</h1><p class="notice">'+text(packet['notice'])+'</p>'
             '<p>Run: '+text(run['run_id'])+'<br>Execution: '+text(run['status'])+
             '<br>Mode: '+text(run.get('mode',''))+'<br>Trace: '+text(result.get('trace_id','unavailable'))+'</p>'
-            '<h2>Conditional position</h2><p>'+text(position.get('recommendation','REFER_TO_COMMITTEE'))+
+            +live_review+'<h2>Local conditional position</h2><p>'+text(position.get('recommendation','REFER_TO_COMMITTEE'))+
             '</p><ul>'+reasons+'</ul><h2>Source provisions</h2>'+(''.join(findings) or '<p>No supported findings available. Refer to an officer.</p>')+
             '<h2>Records to establish before a decision</h2><ul>'+missing+'</ul>'
             '<p>Simulation: '+text(result.get('mode')=='STUB')+'; output gate: '+text(result.get('safety',{}).get('output','unavailable'))+

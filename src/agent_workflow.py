@@ -17,8 +17,9 @@ MAX_TURNS = 6
 MAX_TOOLS = 6
 MAX_PASSES = 2
 PROMPT_VERSIONS = {'investigator': 'v2', 'verifier': 'v3'}
-PROMPT_VARIANTS = {'baseline':PROMPT_VERSIONS, 'strict':{'investigator':'v4','verifier':'v5'}}
+PROMPT_VARIANTS = {'baseline':PROMPT_VERSIONS, 'strict':{'investigator':'v5','verifier':'v6'}}
 PROMPT_CONTEXT = ContextVar('prompt_versions',default=PROMPT_VERSIONS)
+STRICT_TOOLS = {'investigator': {'search_regulations', 'fetch_exact_clause'}, 'verifier': {'verify_claim_quotes'}}
 
 class AgentFailure(RuntimeError):
     pass
@@ -115,6 +116,7 @@ class EvidenceTools:
         self.quote_check = quote_check or verify_source_quote.invoke
         self.bank = {}
         self.checked = set()
+        self.attempted = set()
 
     def _collect(self, result):
         citations = list(result.get('citations', []))
@@ -137,6 +139,7 @@ class EvidenceTools:
             return self._collect(json.loads(self.fetch(args.model_dump())))
         results = []
         for evidence_id in args.evidence_ids:
+            self.attempted.add(evidence_id)
             known = self.bank.get(evidence_id)
             supported = bool(known) and json.loads(self.quote_check({'evidence_id': evidence_id, 'quote': known['exact_quote']})).get('quote_supported') is True
             if supported:
@@ -164,12 +167,22 @@ def _role_loop(model, role, payload, output_type, tools, metrics):
     prompt = (ROOT / 'prompts' / f'{role}_{PROMPT_CONTEXT.get()[role]}.txt').read_text(encoding='utf-8-sig')
     messages = [{'role': 'system', 'content': prompt + '\nWhen finished, call submit_result with your final structured result. It is an output channel, not a source tool. Use the required source tool first.\nOutput schema:\n' + json.dumps(inline_schema(output_type.model_json_schema()))},
                 {'role': 'user', 'content': json.dumps(payload, ensure_ascii=False)}]
-    schemas=SCHEMAS+[{'type':'function','function':{'name':'submit_result','description':'Submit the final structured role result after required source tools.',
+    allowed = STRICT_TOOLS[role] if PROMPT_CONTEXT.get()['verifier'] == 'v6' else ARGUMENTS
+    schemas=[schema for schema in SCHEMAS if schema['function']['name'] in allowed]+[{'type':'function','function':{'name':'submit_result','description':'Submit the final structured role result after required source tools.',
                                                   'parameters':inline_schema(output_type.model_json_schema())}}]
+    required_tool='search_regulations' if role=='investigator' else 'verify_claim_quotes'
+    repaired_provider_format=False
     try:
         for _ in range(MAX_TURNS):
             entry['model_calls'] += 1
-            message = model.complete(role, messages, schemas)
+            try:
+                message = model.complete(role, messages, [] if repaired_provider_format else schemas)
+            except ModelUnavailable as exc:
+                if exc.code != 'TOOL_FORMAT_REJECTED' or repaired_provider_format or required_tool not in entry['tools_used']:
+                    raise
+                repaired_provider_format=True
+                messages.append({'role':'user','content':'Your last response could not be parsed. Return only the final JSON object as plain text, without markup or any tool call.'})
+                continue
             calls = message.get('tool_calls', [])
             if len(calls)==1 and calls[0].get('function',{}).get('name') in ('submit_result','JSON'):
                 try:
@@ -209,6 +222,8 @@ def _role_loop(model, role, payload, output_type, tools, metrics):
             messages.append(message)
             for call in calls:
                 name = call['function']['name']
+                if name not in allowed:
+                    raise AgentFailure('Model selected a tool outside its role allowlist.')
                 entry['tool_calls'] += 1
                 entry['tools_used'].append(name)
                 from telemetry import span
@@ -244,6 +259,7 @@ class AgentState(TypedDict, total=False):
     status: str
     errors: list[str]
     metrics: list[dict]
+    agent_handoff: list[dict]
 
 
 def run_agents(petition, model, tools=None, variant=None):
@@ -262,13 +278,17 @@ def _run_agents(petition, model, tools=None):
     check_input(request.petition)
     tools = tools or EvidenceTools()
     metrics = []
+    from assessment import PROVISIONS, classify
+    required = PROVISIONS[classify(request.petition)]
+    strict = PROMPT_CONTEXT.get()['verifier'] == 'v6'
 
     def investigate(state):
         tools.checked.clear()
-        from assessment import PROVISIONS, classify
-        selection_mode=PROMPT_CONTEXT.get()['investigator']=='v4'
+        selection_mode = strict
+        if strict:
+            tools.bank.clear()
         draft = role_loop(model, 'investigator', {'petition': state['petition'],
-                          'required_provisions':PROVISIONS[classify(state['petition'])],
+                          'required_provisions':required,
                           'research_query': state.get('query', '')}, InvestigationSelection if selection_mode else InvestigationDraft, tools, metrics)
         ids = [c.claim_id for c in draft.claims]
         if len(set(ids)) != len(ids):
@@ -283,39 +303,65 @@ def _run_agents(petition, model, tools=None):
 
     def verify(state):
         tools.checked.clear()
+        tools.attempted.clear()
         draft = Draft.model_validate(state['draft'])
         # New conversation: only petition, typed handoff and canonical evidence are shared.
         selected = {c.evidence_id: tools.bank[c.evidence_id] for c in draft.claims}
-        review = role_loop(model, 'verifier', {'petition': state['petition'], 'draft': draft.model_dump(),
-                           'evidence': selected,
-                           'quote_check_arguments': {'evidence_ids': list(dict.fromkeys(c.evidence_id for c in draft.claims))}},
-                           ReviewDecision if PROMPT_CONTEXT.get()['verifier']=='v5' else Review, tools, metrics)
+        payload = {'petition': state['petition'], 'quote_check_arguments': {'evidence_ids': list(selected)}}
+        if strict:
+            payload.update(required_provisions=required, claims=[
+                {'claim_id': claim.claim_id, 'evidence_id': claim.evidence_id,
+                 'clause_id': selected[claim.evidence_id]['clause_id'],
+                 'quote': claim.supporting_quote} for claim in draft.claims])
+        else:
+            payload.update(draft=draft.model_dump(), evidence=selected)
+        review = role_loop(model, 'verifier', payload, ReviewDecision if strict else Review, tools, metrics)
         if isinstance(review,ReviewDecision):
-            review=Review(**(review.model_dump() | {'verdicts':[item.model_dump() | {'reason':'Verifier marked the canonical excerpt supported after source-tool checking.' if item.supported else 'Verifier withheld support; focused re-search or human review is required.'} for item in review.verdicts]}))
+            review=Review(**(review.model_dump() | {'verdicts':[item.model_dump() | {'reason':'Verifier accepted this clause after the source audit.' if item.supported else 'Verifier flagged this clause for further research.'} for item in review.verdicts]}))
         claim_ids = {c.claim_id for c in draft.claims}
         verdict_ids = [v.claim_id for v in review.verdicts]
         if len(set(verdict_ids)) != len(verdict_ids) or set(verdict_ids) != claim_ids:
             raise AgentFailure('Verifier omitted, duplicated or invented claim verdicts.')
-        if any((c.evidence_id, normalize(c.supporting_quote)) not in tools.checked for c in draft.claims):
+        if not set(selected).issubset(tools.attempted):
+            raise AgentFailure('Verifier did not check every supporting quote using its tool.')
+        failed_checks = {c.claim_id for c in draft.claims
+                         if (c.evidence_id, normalize(c.supporting_quote)) not in tools.checked}
+        if failed_checks and not strict:
             raise AgentFailure('Verifier did not check every supporting quote using its tool.')
         detail_errors = critical_detail_errors(draft, tools.bank)
-        if PROMPT_CONTEXT.get()['investigator'] in ('v3','v4'):
-            from assessment import PROVISIONS, classify
-            required = set(PROVISIONS[classify(state['petition'])])
-            selected_clauses = {tools.bank[claim.evidence_id].get('clause_id') for claim in draft.claims}
+        missing = []
+        selected_clauses = []
+        if strict:
+            selected_clauses = [selected[c.evidence_id]['clause_id'] for c in draft.claims]
+            missing = [clause for clause in required if clause not in selected_clauses]
             for claim in draft.claims:
-                if normalize(claim.statement)!=normalize(tools.bank[claim.evidence_id]['exact_quote']) or selected_clauses!=required:
-                    detail_errors[claim.claim_id] = 'Strict policy requires complete canonical quotations and the complete required provision set.'
+                locator = selected[claim.evidence_id]['clause_id']
+                if claim.claim_id in failed_checks:
+                    detail_errors[claim.claim_id] = 'The quotation did not pass the canonical source check.'
+                elif locator not in required or selected_clauses.count(locator) > 1:
+                    detail_errors[claim.claim_id] = 'The clause is outside the required set or was selected more than once.'
         if detail_errors:
             for verdict in review.verdicts:
                 if verdict.claim_id in detail_errors:
                     verdict.supported = False
                     verdict.reason = detail_errors[verdict.claim_id]
             review.needs_research = True
-            review.research_query = 'Retrieve exact attendance medical provisions; preserve SLCM application, SAP upload and CMO certificate issuer requirements.'
+            if not strict:
+                review.research_query = 'Retrieve exact attendance medical provisions; preserve SLCM application, SAP upload and CMO certificate issuer requirements.'
+        if missing:
+            review.needs_research = True
         supported = all(v.supported for v in review.verdicts) and not review.needs_research
         status = 'REVIEW_REQUIRED' if supported else ('RETRY' if state['passes'] < MAX_PASSES else 'ESCALATE')
-        return {'review': review.model_dump(), 'status': status, 'query': review.research_query}
+        update = {'review': review.model_dump(), 'status': status, 'query': review.research_query}
+        if strict:
+            rejected_ids = {v.claim_id for v in review.verdicts if not v.supported}
+            rejected_clauses = [selected[c.evidence_id]['clause_id'] for c in draft.claims if c.claim_id in rejected_ids]
+            focus = [clause for clause in required if clause in missing or clause in rejected_clauses]
+            update['query'] = f"{state['petition'][:2700]} Verify required provisions {', '.join(focus or required)}." if status == 'RETRY' else ''
+            update['agent_handoff'] = [*state.get('agent_handoff', []), {
+                'selected': len(draft.claims), 'checked': len(draft.claims) - len(failed_checks),
+                'missing': missing, 'rejected': len(rejected_ids), 'outcome': status}]
+        return update
 
     graph = StateGraph(AgentState)
     graph.add_node('investigate', investigate)
@@ -343,6 +389,7 @@ def _run_agents(petition, model, tools=None):
         from workflow import run_petition
         result = run_petition(request.petition)
         result.update(mode='DETERMINISTIC_FALLBACK', hosted_failure=type(exc).__name__,
+                      hosted_failure_code=exc.code if isinstance(exc,ModelUnavailable) else 'AGENT_CONTRACT_FAILED',
                       hosted_failure_reason=str(exc) if isinstance(exc, (AgentFailure, ModelUnavailable)) else 'Model output did not meet the validated contract.',
                       metrics=metrics, model_usage=getattr(model, 'events', []),
                       human_review_required=True, final_decision_made=False)
@@ -360,7 +407,7 @@ def run_hosted(petition):
     except ModelUnavailable:
         from workflow import run_petition
         result = run_petition(request.petition)
-        result.update(mode='DETERMINISTIC_FALLBACK', hosted_failure='MODEL_CONFIGURATION_UNAVAILABLE')
+        result.update(mode='DETERMINISTIC_FALLBACK', hosted_failure='MODEL_CONFIGURATION_UNAVAILABLE', hosted_failure_code='CONFIGURATION_UNAVAILABLE')
         return result
     finally:
         if model is not None:

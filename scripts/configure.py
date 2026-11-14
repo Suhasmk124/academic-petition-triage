@@ -6,7 +6,7 @@ root = Path(__file__).resolve().parents[1]
 directory = root / '.secrets'
 directory.mkdir(exist_ok=True)
 directory.chmod(0o700)
-for name in ('triage_key','grafana_key'):
+for name in ('triage_key','grafana_key','private_triage_key','showcase_key'):
     target = directory / name
     if not target.exists():
         target.write_text(secrets.token_urlsafe(32),encoding='utf-8')

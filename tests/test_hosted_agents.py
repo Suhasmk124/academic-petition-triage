@@ -122,6 +122,53 @@ class AgentTests(unittest.TestCase):
         self.assertEqual(result['status'], 'REVIEW_REQUIRED')
         self.assertEqual(result['passes'], 2)
 
+    def test_strict_audit_sends_an_incomplete_packet_back_and_repairs_it(self):
+        from retrieval import citation, source_pages
+        from index_corpus import reviewed
+        from safety import guarded_result
+        from stub_model import StubChat
+
+        rows = [citation(r) for r in reviewed(source_pages()) if r['metadata'].get('section') == '8.1']
+        observed = []
+
+        class ObservedStub(StubChat):
+            def complete(self, role, messages, schemas):
+                payload = json.loads(messages[1]['content'])
+                if len(messages) == 2:
+                    observed.append((role, payload, {s['function']['name'] for s in schemas}))
+                return super().complete(role, messages, schemas)
+
+        tools = EvidenceTools(search=lambda _: json.dumps({'citations': rows}),
+                              quote_check=lambda _: json.dumps({'quote_supported': True}))
+        raw = run_agents('What are the attendance requirements?', ObservedStub(0, omit_first_pass=True), tools, variant='strict')
+        result = guarded_result(raw, 'attendance')
+        self.assertEqual(result['safety']['output'], 'passed')
+        self.assertEqual(result['agent_handoff'], [
+            {'selected': 1, 'checked': 1, 'missing': ['8.1(ii)', '8.1(iii)'], 'rejected': 0, 'outcome': 'RETRY'},
+            {'selected': 3, 'checked': 3, 'missing': [], 'rejected': 0, 'outcome': 'REVIEW_REQUIRED'}])
+        self.assertEqual(observed[0][2], {'search_regulations', 'fetch_exact_clause', 'submit_result'})
+        self.assertEqual(observed[1][2], {'verify_claim_quotes', 'submit_result'})
+        self.assertNotIn('draft', observed[1][1])
+        self.assertIn('8.1(ii), 8.1(iii)', observed[2][1]['research_query'])
+        self.assertEqual(len(raw['model_usage']), 8)
+
+    def test_strict_audit_escalates_when_source_checks_keep_failing(self):
+        from retrieval import citation, source_pages
+        from index_corpus import reviewed
+        from safety import guarded_result
+        from stub_model import StubChat
+
+        rows = [citation(r) for r in reviewed(source_pages()) if r['metadata'].get('section') == '8.1']
+        tools = EvidenceTools(search=lambda _: json.dumps({'citations': rows}),
+                              quote_check=lambda _: json.dumps({'quote_supported': False}))
+        raw = run_agents('Attendance requirements', StubChat(0), tools, variant='strict')
+        result = guarded_result(raw, 'attendance')
+        self.assertEqual(result['safety']['output'], 'passed')
+        self.assertEqual(result['status'], 'ESCALATE')
+        self.assertEqual(result['draft']['claims'], [])
+        self.assertEqual([entry['outcome'] for entry in result['agent_handoff']], ['RETRY', 'ESCALATE'])
+        self.assertEqual(result['agent_handoff'][1]['rejected'], 3)
+
     def test_repeated_unsupported_claim_escalates_and_clears(self):
         failed = copy.deepcopy(REVIEW)
         failed['verdicts'][0]['supported'] = False

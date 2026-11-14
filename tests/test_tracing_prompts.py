@@ -35,7 +35,7 @@ class TracePromptTests(unittest.TestCase):
     def test_strict_variant_and_token_attribution(self):
         result=self.run_variant('strict')
         self.assertEqual(result['status'],'REVIEW_REQUIRED')
-        self.assertEqual([metric['prompt_version'] for metric in result['metrics']],['investigator_v4','verifier_v5'])
+        self.assertEqual([metric['prompt_version'] for metric in result['metrics']],['investigator_v5','verifier_v6'])
         self.assertTrue(result['model_usage'])
         self.assertTrue(all(event['estimated'] and event['billed_cost_usd']==0 for event in result['model_usage']))
         self.assertTrue(all(claim['statement']==claim['citation']['exact_quote'] for claim in result['draft']['claims']))
@@ -45,7 +45,7 @@ class TracePromptTests(unittest.TestCase):
         with ThreadPoolExecutor(max_workers=2) as pool:
             baseline,strict=list(pool.map(self.run_variant,['baseline','strict']))
         self.assertEqual(baseline['metrics'][0]['prompt_version'],'investigator_v2')
-        self.assertEqual(strict['metrics'][0]['prompt_version'],'investigator_v4')
+        self.assertEqual(strict['metrics'][0]['prompt_version'],'investigator_v5')
 
     def test_timeout_visible_without_exception_payload(self):
         with tempfile.TemporaryDirectory() as folder:

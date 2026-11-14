@@ -4,17 +4,19 @@ The default Compose service uses a simulated model with real retrieval/source to
 
 ## Current protocol
 
-LangGraph runs separately prompted investigator and verifier roles with fresh conversation histories and a typed handoff. They may use the same configured model. Each has six model turns and six source-tool calls; at most two investigation/verification passes are allowed. Retrieval is chosen by the investigator rather than a hidden pre-search. Both roles can select search, exact-clause fetch or bounded quote checking.
+LangGraph runs separately prompted investigator and verifier roles with fresh conversation histories and a typed handoff. They may use the same configured model. Each pass allows up to six model turns and six source-tool calls per role. The investigator chooses when to search and fetch. The graph allows up to two passes.
 
-The strict configuration uses investigator_v4 and verifier_v5. The investigator selects one evidence ID per required provision. The server constructs complete canonical source excerpts; it does not let the model invent citation locations or alter quotations. The verifier independently calls the quote-check tool and supplies a decision for every claim. Complete required-provision coverage, exact statement identity, source integrity and human-review flags are enforced outside the model. Standard verdict labels are server-generated audit text, not model-written semantic explanations.
+The strict configuration uses investigator_v5 and verifier_v6. The investigator has search and clause-fetch tools and submits a packet of evidence IDs. The verifier receives the canonical excerpts and required provision list and has the source-check tool. It returns a verdict for every claim and can request more research. The coordinator enforces source integrity, coverage, and human-review flags. It can send the investigator back once with a query focused on missing or rejected provisions. The review brief shows each pass and its outcome.
 
 Both roles submit through the typed `submit_result` output function, which is separate from the three source tools. Invalid schema output gets bounded correction feedback within the original six-turn limit. It cannot bypass required source work. Baseline prompts retain generated statements for the recorded comparison; the strict path intentionally uses canonical excerpts instead of paraphrases.
+
+A successful search-and-audit pass can finish in four model calls. A second pass can take the total to eight or more. The live deployment's six-request cap remains in effect, so a retry can exhaust the hosted budget and use local fallback. The instructor showcase can demonstrate both passes without using provider quota.
 
 An unsupported review can trigger one re-search; repeated failure escalates with claims discarded. Provider/schema errors use deterministic fallback and never count as successful hosted completion. Fallback runs preserve the failure reason and usage. All routes remain recommendations for an officer. These safeguards establish extractive fidelity and coverage, not broad language-model entailment accuracy.
 
 ## Verified evidence
 
-On 2026-10-24 the final strict live acceptance passed in four provider requests: investigator selected search and submitted three source IDs; verifier selected quote checking and submitted three decisions. Both role metrics report success, and the final source gate passed. See `evaluations/hosted_postguard_smoke.json`. This is one fictional public-handbook case, not a broad accuracy claim.
+On 2026-10-24 the previous v4/v5 configuration passed a live acceptance check in four provider requests. See `evaluations/hosted_postguard_smoke.json`. The current v5/v6 audit behavior is covered by simulated tests.
 
 A prior live A/B comparison contains one complete baseline/strict pair, with the strict v3/v4 canonical-statement prompts. Raw quota-exhausted cells remain in `prompt_ab_quota_run.json`; incomplete cells and successful fallback are not counted as successful model output. That experiment predates the smaller v4/v5 selection protocol. Do not claim it compares the final prompt versions or provides statistical significance.
 
@@ -22,7 +24,7 @@ Earlier failures are retained in the hosted failure reports and incident log: se
 
 ## Local configuration
 
-Use the ignored `.env` and the blank tracked `.env.example`. Set `LLM_BASE_URL`, `LLM_MODEL`, `LLM_API_KEY`, and assert `LLM_FREE_PLAN_CONFIRMED=true` only after checking your account is on the Free Plan. Do not upgrade or add payment for this project. The flag is your assertion, not an automatic billing check. Never paste keys into chat, logs or Git.
+For a clean clone, follow the [Groq setup and live Docker commands](teammate_handoff.md#turn-on-live-groq-agents). Keep the key in the ignored `.env`. The free-plan flag records your confirmation.
 
 ```powershell
 .\.venv\Scripts\python.exe src\live_acceptance.py --max-requests 6

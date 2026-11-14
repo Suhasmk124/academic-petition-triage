@@ -11,7 +11,9 @@ import httpx
 from dotenv import load_dotenv
 
 class ModelUnavailable(RuntimeError):
-    pass
+    def __init__(self, message, code='MODEL_UNAVAILABLE'):
+        super().__init__(message)
+        self.code = code
 
 @dataclass
 class HostedSettings:
@@ -33,7 +35,8 @@ class HostedSettings:
 
     @classmethod
     def from_env(cls):
-        load_dotenv(Path(__file__).resolve().parents[1] / '.env', override=False, encoding='utf-8-sig')
+        config = os.getenv('TRIAGE_HOSTED_CONFIG') or Path(__file__).resolve().parents[1] / '.env'
+        load_dotenv(config, override=False, encoding='utf-8-sig')
         try:
             return cls(base_url=os.getenv('LLM_BASE_URL', ''), model=os.getenv('LLM_MODEL', ''),
                        api_key=os.getenv('LLM_API_KEY', ''),
@@ -59,26 +62,30 @@ class HostedChat:
 
     def complete(self, role, messages, tools):
         if self.clock() < self.open_until:
-            raise ModelUnavailable('Model circuit is temporarily open.')
+            raise ModelUnavailable('Model circuit is temporarily open.', 'CIRCUIT_OPEN')
         first_action = not any(message.get('role')=='tool' for message in messages)
         choice = 'required' if first_action and tools and os.getenv('LLM_FORCE_TOOL_START','false')=='true' else 'auto'
         body = dict(model=self.settings.model, messages=messages,
-                    tools=tools, tool_choice=choice, max_completion_tokens=self.settings.max_output_tokens)
+                    max_completion_tokens=self.settings.max_output_tokens)
+        if tools:
+            body.update(tools=tools,tool_choice=choice,parallel_tool_calls=False)
         if os.getenv('LLM_REASONING_EFFORT'):
             body['reasoning_effort']=os.environ['LLM_REASONING_EFFORT']
-        body['parallel_tool_calls']=False
         started = self.clock()
         estimated_tokens = math.ceil(len(json.dumps(body)) / 4) + self.settings.max_output_tokens
         pacing_seconds = 0.0
         if self.token_limit is not None and estimated_tokens > self.token_limit:
-            raise ModelUnavailable('Request estimate exceeds the free token limit; reduce context/output size.')
+            raise ModelUnavailable('Request estimate exceeds the free token limit; reduce context/output size.', 'CONTEXT_BUDGET')
         if self.token_remaining is not None and estimated_tokens > self.token_remaining:
             pacing_seconds = max(0.0, self.token_reset_at - self.clock()) + 1.0
             if pacing_seconds > 65:
-                raise ModelUnavailable('Free token window requires a longer pause; retry later.')
+                raise ModelUnavailable('Free token window requires a longer pause; retry later.', 'QUOTA_WAIT')
             self.sleep(pacing_seconds)
             self.token_remaining = None
         for attempt in range(2):
+            max_requests = int(os.getenv('LLM_MAX_REQUESTS','0'))
+            if max_requests and len(self.events) >= max_requests:
+                raise ModelUnavailable('Hosted request budget reached.', 'REQUEST_BUDGET')
             event = dict(agent=role, attempt=attempt + 1, success=False,
                          input_tokens=None, output_tokens=None, billed_cost_usd=None, pacing_seconds=round(pacing_seconds, 3))
             try:
@@ -89,7 +96,7 @@ class HostedChat:
                 self._rate_headers(response.headers)
                 # Do not retry free-quota exhaustion or switch provider/model automatically.
                 if response.status_code == 429:
-                    raise ModelUnavailable('Free quota/rate limit reached; no paid fallback was attempted.')
+                    raise ModelUnavailable('Free quota/rate limit reached; no paid fallback was attempted.', 'RATE_LIMITED')
                 if response.status_code in (500, 502, 503, 504) and attempt == 0:
                     event['latency_seconds'] = self.clock() - started
                     self.events.append(event)
@@ -103,14 +110,16 @@ class HostedChat:
                         event['provider_error_message'] = str(error.get('message', '')).replace(self.settings.api_key, '[REDACTED]')[:600]
                     except (ValueError, AttributeError):
                         pass
-                    raise ModelUnavailable(f'Model request failed with HTTP {response.status_code}.')
+                    code = ('TOOL_FORMAT_REJECTED' if response.status_code == 400 and event.get('provider_error_code') in ('tool_use_failed','output_parse_failed')
+                            else 'PROVIDER_HTTP_ERROR')
+                    raise ModelUnavailable(f'Model request failed with HTTP {response.status_code}.',code)
                 data = response.json()
                 choice = data['choices'][0]
                 if choice.get('finish_reason') in ('length', 'content_filter'):
-                    raise ModelUnavailable('Model response was truncated or filtered.')
+                    raise ModelUnavailable('Model response was truncated or filtered.', 'TRUNCATED_OR_FILTERED')
                 message = choice['message']
                 if message.get('refusal'):
-                    raise ModelUnavailable('Model refused the request.')
+                    raise ModelUnavailable('Model refused the request.', 'REFUSED')
                 usage = data.get('usage') or {}
                 event.update(success=True, input_tokens=usage.get('prompt_tokens'),
                              output_tokens=usage.get('completion_tokens'),
@@ -119,7 +128,8 @@ class HostedChat:
                 self.failures = 0
                 return {'role': 'assistant', 'content': message.get('content'),
                         **({'tool_calls': message['tool_calls']} if message.get('tool_calls') else {})}
-            except (httpx.TimeoutException, httpx.TransportError):
+            except (httpx.TimeoutException, httpx.TransportError) as exc:
+                event['failure_code'] = 'TIMEOUT' if isinstance(exc,httpx.TimeoutException) else 'TRANSPORT_FAILURE'
                 event['latency_seconds'] = self.clock() - started
                 self.events.append(event)
                 if attempt == 0:
@@ -132,9 +142,9 @@ class HostedChat:
                 self._failure()
                 if isinstance(exc, ModelUnavailable):
                     raise
-                raise ModelUnavailable('Malformed model response.') from exc
+                raise ModelUnavailable('Malformed model response.', 'INVALID_RESPONSE') from exc
         self._failure()
-        raise ModelUnavailable('Model transport failed after two attempts.')
+        raise ModelUnavailable('Model transport failed after two attempts.', event.get('failure_code','TRANSPORT_FAILURE'))
 
     def _rate_headers(self, headers):
         try:

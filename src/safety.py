@@ -19,6 +19,14 @@ class AgentMetric(Contract):
     latency_seconds: float = Field(ge=0, allow_inf_nan=False)
 
 
+class AgentHandoff(Contract):
+    selected: StrictInt = Field(ge=1, le=6)
+    checked: StrictInt = Field(ge=0, le=6)
+    rejected: StrictInt = Field(ge=0, le=6)
+    missing: list[str] = Field(max_length=6)
+    outcome: Literal['RETRY', 'ESCALATE', 'REVIEW_REQUIRED']
+
+
 class PolicyViolation(ValueError):
     def __init__(self, reasons):
         self.reasons = reasons
@@ -105,10 +113,35 @@ def guarded_result(result, petition=None):
         output = {key: result[key] for key in ('status', 'mode', 'simulated', 'stub_workflow_path', 'billable_model_requests',
                                               'provider_response_used', 'semantic_review') if key in result}
         output['draft' if 'draft' in result else 'assessment'] = brief
+        if result.get('mode') == 'HOSTED_AGENTS' and result.get('provider_response_used') is True and result['status']=='REVIEW_REQUIRED':
+            from agent_workflow import Review
+            review = Review.model_validate(result['review'])
+            verdicts = {v.claim_id:v.supported for v in review.verdicts}
+            claim_ids = {item['claim_id'] for item in raw}
+            if (review.needs_research or len(verdicts) != len(review.verdicts) or
+                verdicts.keys() != claim_ids or not all(verdicts.values())):
+                raise ValueError('Hosted review does not cover accepted claims')
+            output['hosted_review'] = [
+                {'clause_id':item['citation']['clause_id'],'evidence_id':item['evidence_id'],
+                 'verifier_supported':verdicts[item['claim_id']]} for item in raw
+            ]
         metrics = result.get('metrics', [])
         if not isinstance(metrics, list) or len(metrics) > 4:
             raise ValueError('Invalid agent metrics')
         output['metrics'] = [AgentMetric.model_validate(entry).model_dump() for entry in metrics]
+        if 'agent_handoff' in result:
+            handoff = result['agent_handoff']
+            if not isinstance(handoff, list) or not 1 <= len(handoff) <= 2:
+                raise ValueError('Invalid agent handoff history')
+            audits = [AgentHandoff.model_validate(entry) for entry in handoff]
+            known_clauses = set(PROVISIONS[classify(petition)]) if petition is not None else {
+                clause for group in PROVISIONS.values() for clause in group}
+            if audits[-1].outcome != result['status'] or any(
+                audit.checked > audit.selected or audit.rejected > audit.selected or not set(audit.missing) <= known_clauses
+                for audit in audits
+            ):
+                raise ValueError('Agent handoff audit is inconsistent')
+            output['agent_handoff'] = [audit.model_dump() for audit in audits]
         output['usage'] = []
         for event in result.get('model_usage',[])[:48]:
             if event.get('agent') not in ('investigator','verifier'): continue

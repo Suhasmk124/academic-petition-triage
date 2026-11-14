@@ -17,9 +17,16 @@ class ServiceSettings:
     stub_delay_seconds: float = .15
     max_body_bytes: int = 16384
     allow_hosted: bool = False
+    private_records: bool = False
+    role_accounts: bool = False
+    role_demo: bool = False
     job_timeout: float = 180
 
     def __post_init__(self):
+        if self.role_accounts and not self.private_records:
+            raise ValueError('Role accounts require a private workspace')
+        if self.role_demo and not (self.role_accounts and self.mode == 'stub'):
+            raise ValueError('Demo credentials require a simulated role workspace')
         if self.mode not in ('stub', 'deterministic', 'hosted') or (self.mode=='hosted' and not self.allow_hosted):
             raise ValueError('Service mode must be stub or deterministic; hosted mode is not enabled.')
         if self.queue_capacity < 1 or self.lease_seconds < 1 or not 0 <= self.stub_delay_seconds <= 10 or self.max_body_bytes < 256:
@@ -35,4 +42,7 @@ class ServiceSettings:
                    lease_seconds=float(os.getenv('TRIAGE_LEASE_SECONDS', '120')),
                    stub_delay_seconds=float(os.getenv('TRIAGE_STUB_DELAY_SECONDS', '.15')),
                    allow_hosted=os.getenv('TRIAGE_ALLOW_HOSTED','false')=='true',
+                   private_records=os.getenv('TRIAGE_PRIVATE_RECORDS','false')=='true',
+                   role_accounts=os.getenv('TRIAGE_ROLE_ACCOUNTS','false')=='true',
+                   role_demo=os.getenv('TRIAGE_ROLE_DEMO','false')=='true',
                    job_timeout=float(os.getenv('TRIAGE_JOB_TIMEOUT','180')))

@@ -2,9 +2,21 @@
 
 Mini Project 15 · ML System Design & AgentOps · UE24AM342AA5.
 
-An asynchronous, source-grounded petition desk using the IISc Undergraduate Handbook 2025–26. It produces conditional recommendations and complete clause citations for human review. It never makes the final academic decision. Use fictional petitions only.
+An asynchronous, source-grounded petition desk using the IISc Undergraduate Handbook 2025–26. It produces conditional recommendations and complete clause citations for human review. It never makes the final academic decision. The default demo accepts fictional petitions only; live intake uses a separate local workspace.
 
 ## Run
+
+New teammate? Start with the [clone, Docker, Groq and project handoff guide](docs/teammate_handoff.md).
+
+For the instructor showcase on Windows:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\scripts\start.ps1 -Showcase
+```
+
+Open [the showcase](http://127.0.0.1:8003) and select Student, Reviewer or Administrator. All three showcase roles use `pass@1234`. The guide covers macOS/Linux, dashboard links, and the stress-test and agent-audit commands.
+
+### Base simulation and live mode
 
 Start Docker Desktop in Linux-container mode, then from the cloned project:
 
@@ -16,10 +28,12 @@ Open http://127.0.0.1:8000 and enter the local workspace key from `.secrets/tria
 
 The starter generates secrets in a disposable container if the existing project virtual environment is absent. All application services run in containers. See [deployment instructions](docs/operations.md) for clean-clone setup, monitoring, tests, hosted opt-in and shutdown.
 
+For **live agents and local supporting documents**, run `.\scripts\start.ps1 -Live` and open the private workspace on port 8002. See [private workspace setup and data handling](docs/private_workspace.md). The default demo remains separate.
+
 ## Implemented behavior
 
 - FastAPI submission, persistent run IDs/status polling, schema/content validation, quarantine and leased background workers.
-- Two separately prompted LangGraph roles: investigation selects retrieval tools; verification checks the typed handoff. Three source tools, six turns/tools per role, one bounded re-search and deterministic fallback. Simulation is clearly identified.
+- Two separately prompted LangGraph roles. The investigator selects handbook evidence. The source auditor checks quotation integrity and required-provision coverage, with one bounded re-search and recorded pass outcomes.
 - Conditional attendance processing/restriction recommendations and referral where evidence or exceptions remain unresolved. Structured facts remain unverified; every position requires an officer.
 - Clause-aware hybrid retrieval over Chroma: 180 pages, 496 generic chunks and 13 reviewed clause records. Full quotations, hashes, offsets, source version and verified page/section metadata. Reviewed metadata covers pilot clauses, not the whole handbook.
 - Idempotent preview/apply ingestion and incremental re-embedding, manifest, freshness/count/timing reports and acknowledgment of changed source PDFs.
@@ -29,6 +43,7 @@ The starter generates secrets in a disposable container if the existing project 
 - Workspace-key authentication, signed browser sessions, shared Redis rate limits and versioned TTL cache with output revalidation.
 - Separate warmed simulated model service, bounded retries/backoff, circuit breaker, isolated deadline and durable queue recovery.
 - Compose indexer/API/three workers/stub/Redis/Jaeger/Prometheus/Grafana, health checks, volumes, non-root application and loopback host ports.
+- [Instructor showcase](docs/instructor_showcase.md) with preset role logins, an isolated workspace, and a reproducible stress test with live Grafana panels.
 - Payload-free traces, correlation logs, per-role calls/tools/retries/success/latency/tokens, metrics and provisioned Grafana dashboard.
 - Versioned prompt comparison, 30 scenarios/60 local workflow runs, 22 safety cases and 22 source-meaning challenges. Locust compares worker scaling and cache against a predeclared SLO.
 
@@ -54,11 +69,11 @@ flowchart LR
     API --> Prometheus --> Grafana
 ```
 
-SQLite worker replication is supported on one Docker host; multi-host SQLite operation is outside this implementation. The workspace key is shared demonstration access, not individual student authorization.
+SQLite worker replicas share a single Docker host. The base simulation uses a shared workspace key. The showcase and live stacks have individual role sessions and separate volumes.
 
 ## Verification status
 
-Latest full container checks passed: 105 unit tests, 11 retrieval checks, 22 safety cases, 22 source-meaning challenges, 30 scenarios/60 local workflow runs and real HTTP/worker/restart integration.
+The current Docker image passed 115 automated tests and the three supported petition workflows through the showcase API. The audit demonstration repaired an incomplete source packet. Earlier evaluation reports cover 11 retrieval checks, 22 safety cases, 22 source-meaning challenges, 30 scenarios/60 local workflow runs and HTTP/worker/restart integration.
 
 Fresh Docker startup/index initialization, linked Jaeger spans, Prometheus scraping, the Grafana dashboard, authentication, all three conditional positions, quarantine, feedback, PDF access, real stub outage/circuit/recovery and rate limiting passed. An unchanged index run re-embedded zero of 509 records. Browser submission and saved-run recovery passed with no console errors. See the reports in `evaluations/` and [performance measurements](docs/performance.md).
 
@@ -70,7 +85,7 @@ Fresh Docker startup/index initialization, linked Jaeger spans, Prometheus scrap
 
 All rounds met the predeclared completion p95 <=10 s, submission p95 <=750 ms and failure ratio <=1%. The repeated-input cache round avoided 3,760 simulated calls. No hosted requests or paid-model cost experiment was involved. These measurements describe this machine/workload, not universal production guarantees.
 
-Hosted inference is evaluated separately. The final strict investigator v4/verifier v5 acceptance completed both real roles in four requests, with three complete canonical claims and a passing source gate. An earlier live A/B case compares the baseline and strict v3/v4 prompts; it predates the final selection protocol. Raw quota-limited attempts and compatibility failures are retained. Fallback is never counted as successful hosted inference. These small live samples cannot establish broad model quality. Provider token counts are reported when supplied; unknown billed costs remain null. Stub tokens are marked estimates and cost zero.
+The recorded Groq acceptance used earlier v4/v5 prompts and completed both roles in four requests. The current v5/v6 prompts and audit retry have been verified with simulation. See [hosted verification history](docs/hosted_agents.md) for recorded outcomes and test scope.
 
 ## Checks and shutdown
 
@@ -96,4 +111,4 @@ Host drivers use the existing virtual environment; application/regression execut
 
 Earlier stage documents and the original context handoff describe historical commits. The maintained implementation is in `src/`; `docs/proposals/` contains historical proposals.
 
-The handbook PDF and extracted text are third-party source material. This repository grants no rights over them. Do not submit real student records or medical documents to this demonstration service.
+The handbook PDF and extracted text are third-party source material. This repository grants no rights over them. Keep student records out of the shared demo. Only the separate, key-protected local workspace accepts supporting documents.

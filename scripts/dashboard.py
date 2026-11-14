@@ -1,9 +1,14 @@
 import json
 from pathlib import Path
 queries = [
-    ('HTTP p95','histogram_quantile(0.95, sum by (le) (rate(triage_http_duration_seconds_bucket[5m])))'),
+    ('Workflow p95 (seconds)','histogram_quantile(0.95, sum by (le) (rate(triage_workflow_duration_seconds_bucket{status="SUCCEEDED"}[1m])))'),
+    ('Workflows completed per second','sum by (status) (rate(triage_workflow_duration_seconds_count[1m]))'),
     ('Queue depth','triage_jobs{status="QUEUED"}'),
     ('Active workers','triage_active_workers'),
+    ('Oldest queued petition (seconds)','triage_oldest_queued_seconds'),
+    ('Failed workflows in the last minute','increase(triage_workflow_duration_seconds_count{status="FAILED"}[1m])'),
+    ('Submission HTTP p95 (seconds)','histogram_quantile(0.95, sum by (le) (rate(triage_http_duration_seconds_bucket{route=~"/petitions(/private)?"}[1m])))'),
+    ('API errors per second','sum by (status) (rate(triage_http_requests_total{status=~"[45].."}[1m]))'),
     ('Agent calls','triage_agent_runs_total'),
     ('Agent time','triage_agent_duration_seconds_sum'),
     ('Tool calls','triage_agent_tool_calls_total'),

@@ -1,0 +1,26 @@
+name: academic-petition-showcase
+services:
+  api:
+    ports: !override ["127.0.0.1:8003:8000"]
+    environment: &showcase
+      TRIAGE_MODE: stub
+      TRIAGE_PRIVATE_RECORDS: "true"
+      TRIAGE_ROLE_ACCOUNTS: "true"
+      TRIAGE_ROLE_DEMO: "true"
+      TRIAGE_CACHE_TTL: "0"
+      TRIAGE_RATE_LIMIT: "0"
+  worker:
+    environment: *showcase
+  jaeger:
+    ports: !override ["127.0.0.1:16687:16686"]
+  prometheus:
+    ports: !override ["127.0.0.1:9091:9090"]
+  grafana:
+    ports: !override ["127.0.0.1:3001:3000"]
+    secrets: !reset []
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD__FILE: !reset null
+      GF_SECURITY_ADMIN_PASSWORD: "pass@1234"
+secrets:
+  triage_key:
+    file: .secrets/showcase_key

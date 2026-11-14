@@ -1,0 +1,40 @@
+services:
+  api:
+    ports: !override ["127.0.0.1:8002:8000"]
+    environment:
+      TRIAGE_MODE: hosted
+      TRIAGE_ALLOW_HOSTED: "true"
+      TRIAGE_PRIVATE_RECORDS: "true"
+      TRIAGE_ROLE_ACCOUNTS: "true"
+      TRIAGE_CACHE_TTL: "0"
+    secrets: !override
+      - source: private_triage_key
+        target: triage_key
+  worker:
+    depends_on: !override
+      api: {condition: service_healthy}
+    environment:
+      TRIAGE_MODE: hosted
+      TRIAGE_ALLOW_HOSTED: "true"
+      TRIAGE_PRIVATE_RECORDS: "true"
+      TRIAGE_CACHE_TTL: "0"
+      TRIAGE_HOSTED_CONFIG: /run/secrets/hosted_config
+      TRIAGE_JOB_TIMEOUT: 240
+      LLM_MAX_REQUESTS: 6
+      LLM_REASONING_EFFORT: low
+    secrets: [hosted_config]
+  prometheus:
+    ports: !reset []
+    secrets: !override
+      - source: private_triage_key
+        target: triage_key
+  grafana:
+    ports: !reset []
+  jaeger:
+    ports: !reset []
+secrets:
+  private_triage_key:
+    file: .secrets/private_triage_key
+    name: private_triage_key
+  hosted_config:
+    file: .env
